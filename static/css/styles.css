@@ -1,0 +1,116 @@
+body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
+.dark-theme {
+    background-color: #121212;
+    color: #f8f9fa;
+}
+
+.chat-container {
+    max-width: 800px;
+    margin: 50px auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-theme .chat-container {
+    background: #333;
+    color: #fff;
+}
+
+.chat-box {
+    height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+    transition: background-color 0.3s;
+}
+
+.dark-theme .chat-box {
+    background-color: #222;
+    border-color: #555;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+.input-group input {
+    flex-grow: 1;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.dark-theme .input-group input {
+    background-color: #444;
+    border-color: #666;
+    color: #f8f9fa;
+}
+
+.input-group button {
+    background-color: #28a745; 
+    border: none;
+    color: white;
+    transition: background-color 0.3s;
+    margin-left: 5px;
+    flex-shrink: 0;
+    padding: 10px 20px;
+}
+
+.input-group button:hover {
+    background-color: #218838; 
+}
+
+.dark-theme .input-group button {
+    background-color: #1e7e34; 
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.theme-btn {
+    background: #f8f9fa;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    font-size: 20px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.theme-btn:hover {
+    background: #ddd;
+    transform: scale(1.1);
+}
+
+.dark-theme .theme-btn {
+    background: #333;
+    color: #f8f9fa;
+}
+
+.input-group input::placeholder {
+    color: #888;
+    transition: color 0.3s;
+}
+
+/* Styl dla placeholdera w ciemnym motywie */
+.dark-theme .input-group input::placeholder {
+    color: #aaa;
+}
