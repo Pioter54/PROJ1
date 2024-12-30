@@ -110,7 +110,49 @@ body {
     transition: color 0.3s;
 }
 
-/* Styl dla placeholdera w ciemnym motywie */
 .dark-theme .input-group input::placeholder {
     color: #aaa;
+}
+
+.message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 75%;
+    word-wrap: break-word;
+}
+
+.user-message {
+    background-color: #d1e7dd;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.bot-message {
+    background-color: #f8d7da;
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+.chat-box {
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+    transition: background-color 0.3s;
+}
+
+.dark-theme .user-message {
+    background-color: #2c6e49;
+    color: #fff;
+}
+
+.dark-theme .bot-message {
+    background-color: #8b0000;
+    color: #fff;
 }
