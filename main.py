@@ -48,4 +48,4 @@ def chat():
     return jsonify({"response": f"Oto kod, który został zastosowany: {terraform_query}", "terraform_result": terraform_result})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
