@@ -1,8 +1,0 @@
-{
-    "project_name": "modern-rhythm-444518-n9",
-    "machine_type": "e2-micro",
-    "zone": "us-central1-a",
-    "image_family": "debian-12",
-    "network": "default",
-    "public_ip": true
-}

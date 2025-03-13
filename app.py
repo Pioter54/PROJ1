@@ -1,4 +1,4 @@
-from main import initialize_langchain, generate_terraform, save_terraform_to_file, execute_terraform
+from main import initialize_langchain, generate_json, save_json_to_file, update_terraform_from_json, execute_terraform
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
@@ -11,8 +11,9 @@ def index():
 def chat():
     client = initialize_langchain()
     user_input = request.json.get('message')
-    terraform_query = generate_terraform(client, user_input)
-    save_terraform_to_file(terraform_query)
+    json = generate_json(client, user_input)
+    save_json_to_file(json)
+    terraform_query = update_terraform_from_json("main.json", "terraform-templates/create_machine.tf", "main.tf")
     terraform_result = execute_terraform()
     return jsonify({"response": f"Oto kod, który został zastosowany: {terraform_query}", "terraform_result": terraform_result})
 
