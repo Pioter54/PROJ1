@@ -1,6 +1,7 @@
 from main import initialize_langchain, generate_json, save_json_to_file, update_terraform_from_json, execute_terraform
 from flask import Flask, render_template, request, jsonify
 
+# Inicjalizacja aplikacji Flask
 app = Flask(__name__)
 
 @app.route('/')

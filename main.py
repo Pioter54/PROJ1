@@ -6,11 +6,14 @@ import subprocess
 import json
 import re
 
+# Inicjalizacja klienta LangChain
 load_dotenv()
-
 def initialize_langchain():
     return ChatOpenAI(model="gpt-3.5-turbo", temperature=0.2)
 
+# Generowanie pliku JSON na podstawie wiadomości użytkownika
+# Można to lekko poprawić żeby generowany plik był bardziej uniwersalny
+# Przykładowy prompt: "Stwórz mi najtańszą maszynę gcp, nazwa projektu to modern-rhythm-444518-n9 a obraz maszyny użyj Debian 12, typem maszyny e2-micro, w strefie us-central1-a, z domyślną siecią i publicznym adresem IP."
 def generate_json(langchain_client, prompt):
     messages = [
         SystemMessage(content="Na podstawie wiadomości użytkownika określ, jaką infrastrukturę chce utworzyć (np. vm, database, storage, network, other). "
@@ -22,11 +25,12 @@ def generate_json(langchain_client, prompt):
     response = langchain_client(messages)
     return response.content.strip()
 
-def save_json_to_file(terraform_code, file_path="main.json"):
-    with open(file_path, "w") as terraform_file:
-        terraform_file.write(terraform_code)
-    print(f"Kod Terraform zapisany do pliku: {file_path}")
+# Zapisywanie JSON do pliku
+def save_json_to_file(json_code, file_path="main.json"):
+    with open(file_path, "w") as json_file:
+        json_file.write(json_code)
 
+# Aktualizacja template Terraform na podstawie pliku JSON i zapisywanie go jako nowu plik
 def update_terraform_from_json(json_file, tf_template, tf_file):
     with open(json_file, 'r') as jf:
         data = json.load(jf)
@@ -52,6 +56,8 @@ def update_terraform_from_json(json_file, tf_template, tf_file):
     
     return(f"Wygenerowano {tf_file} na podstawie {tf_template}")
 
+# Wykonanie kodu Terraform
+# Póki co zakomentowane na potrzeby testów
 def execute_terraform(directory="."):
     # try:
     #     subprocess.run(["terraform", "init"], cwd=directory, check=True)
