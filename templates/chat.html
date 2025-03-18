@@ -1,3 +1,4 @@
+<!-- chat.html -->
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -19,6 +20,12 @@
         <div class="input-group">
             <input type="text" id="user-input" class="form-control" placeholder="Wpisz swoją wiadomość...">
             <button id="send-button" class="btn btn-success">Wyślij</button>
+        </div>
+        <!-- Sekcja podglądu i edycji JSON -->
+        <div id="json-review" style="display: none; margin-top:20px;">
+            <h4>Podgląd wygenerowanego JSON:</h4>
+            <textarea id="json-editor" rows="10" style="width: 100%;"></textarea>
+            <button id="approve-button" class="btn btn-primary mt-2">Zatwierdź JSON</button>
         </div>
     </div>
 </body>

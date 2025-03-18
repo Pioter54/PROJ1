@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage, HumanMessage
 import subprocess
+from pathlib import Path
 import json
 import re
 
@@ -15,14 +15,19 @@ def initialize_langchain():
 # Można to lekko poprawić żeby generowany plik był bardziej uniwersalny
 # Przykładowy prompt: "Stwórz mi najtańszą maszynę gcp, nazwa projektu to modern-rhythm-444518-n9 a obraz maszyny użyj Debian 12, typem maszyny e2-micro, w strefie us-central1-a, z domyślną siecią i publicznym adresem IP."
 def generate_json(langchain_client, prompt):
+    file_path = './terraform-templates/template.json'
+
+    # Wczytaj przykładowy JSON jako wzór
+    with open(file_path, 'r') as json_file:
+        example_json = json_file.read()
     messages = [
-        SystemMessage(content="Na podstawie wiadomości użytkownika określ, jaką infrastrukturę chce utworzyć (np. vm, database, storage, network, other). "
-        "Następnie wyodrębnij kluczowe informacje i zapisz je w formacie JSON. Jeśli użytkownik nie podał konkretnej wartości, pomiń ją. Nazwy zmiennych utrzymuj w formacie terraformowym, po angielsku."
-        "Nie dodawaj wyjaśnień, wstępu ani dodatkowego tekstu. W odpowiedzi generuj wyłącznie plik json. "
-        "Przykładowy format: {\"project_name\": \"my-project\", \"machine_type\": \"n1-standard-1\", \"zone\": \"us-central1-a\", \"image\": \"debian-10\", \"network\": \"default\"}"),
-        HumanMessage(content=prompt)
+        {"role": "system",
+         "content": f"Na podstawie wiadomości użytkownika określ, jaką infrastrukturę chce utworzyć (np. vm, database, storage, network, other). Następnie wyodrębnij kluczowe informacje i zapisz je w formacie JSON. Jeśli użytkownik nie podał konkretnej wartości, pomiń ją. Nazwy zmiennych utrzymuj w formacie terraformowym, po angielsku. Nie dodawaj wyjaśnień, wstępu ani dodatkowego tekstu. W odpowiedzi generuj wyłącznie plik json. Przykładowy format: {example_json}"},
+        {"role": "user", "content": prompt}
     ]
-    response = langchain_client(messages)
+
+    response = langchain_client.invoke(messages)
+
     return response.content.strip()
 
 # Zapisywanie JSON do pliku
@@ -67,3 +72,8 @@ def execute_terraform(directory="."):
     # except subprocess.CalledProcessError as e:
     #     return f"Błąd podczas wykonywania Terraform: {e}"
     return "Kod Terraform został zastosowany."
+
+def load_json_template():
+    file_path = './terraform-templates/template.json'
+    data = json.loads(Path(file_path).read_text())
+    return data
