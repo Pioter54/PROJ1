@@ -8,8 +8,11 @@ import re
 
 # Inicjalizacja klienta LangChain
 load_dotenv()
+
+
 def initialize_langchain():
     return ChatOpenAI(model="gpt-3.5-turbo", temperature=0.2)
+
 
 # Generowanie pliku JSON na podstawie wiadomości użytkownika
 # Można to lekko poprawić żeby generowany plik był bardziej uniwersalny
@@ -30,10 +33,12 @@ def generate_json(langchain_client, prompt):
 
     return response.content.strip()
 
+
 # Zapisywanie JSON do pliku
 def save_json_to_file(json_code, file_path="temp/output.json"):
     with open(file_path, "w") as json_file:
         json_file.write(json_code)
+
 
 # Aktualizacja template Terraform na podstawie pliku JSON i zapisywanie go jako nowu plik
 def update_terraform_from_json(json_file, template_folder):
@@ -54,7 +59,7 @@ def update_terraform_from_json(json_file, template_folder):
             tf_content = tf.read()
 
         replacements = {}
-        
+
         if operation == "create_machine":
             replacements = {
                 r'project\s*=\s*"[^"]+"': f'project = "{data.get("project", "")}"',
@@ -64,7 +69,7 @@ def update_terraform_from_json(json_file, template_folder):
                 r'image\s*=\s*"[^"]+"': f'image = "debian-cloud/{data.get("image", "").lower().replace(" ", "-")}"',
                 r'network\s*=\s*"[^"]+"': f'network = "{data.get("network", "")}"'
             }
-        
+
         elif operation == "create_bucket":
             replacements = {
                 r'project\s*=\s*"[^"]+"': f'project = "{data.get("project", "")}"',
@@ -79,6 +84,7 @@ def update_terraform_from_json(json_file, template_folder):
 
         print(f"Wygenerowano {tf_output_path} na podstawie {tf_template_path}")
 
+
 # Wykonanie kodu Terraform
 # Póki co zakomentowane na potrzeby testów
 def execute_terraform(directory="."):
@@ -90,6 +96,7 @@ def execute_terraform(directory="."):
     # except subprocess.CalledProcessError as e:
     #     return f"Błąd podczas wykonywania Terraform: {e}"
     return "Kod Terraform został zastosowany."
+
 
 def load_json_template():
     file_path = './terraform-templates/template.json'

@@ -4,9 +4,11 @@ from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def index():
     return render_template('chat.html')
+
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -15,6 +17,7 @@ def chat():
     generated_json = generate_json(client, user_input)
     # Zwracamy JSON do wyświetlenia użytkownikowi
     return jsonify({"json_code": generated_json})
+
 
 @app.route('/approve_json', methods=['POST'])
 def approve_json():
@@ -27,6 +30,7 @@ def approve_json():
         "response": f"Oto kod, który został zastosowany: {terraform_query}",
         "terraform_result": terraform_result
     })
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
