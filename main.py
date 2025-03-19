@@ -31,35 +31,53 @@ def generate_json(langchain_client, prompt):
     return response.content.strip()
 
 # Zapisywanie JSON do pliku
-def save_json_to_file(json_code, file_path="main.json"):
+def save_json_to_file(json_code, file_path="temp/output.json"):
     with open(file_path, "w") as json_file:
         json_file.write(json_code)
 
 # Aktualizacja template Terraform na podstawie pliku JSON i zapisywanie go jako nowu plik
-def update_terraform_from_json(json_file, tf_template, tf_file):
+def update_terraform_from_json(json_file, template_folder):
     with open(json_file, 'r') as jf:
         data = json.load(jf)
-    
-    with open(tf_template, 'r') as tf:
-        tf_content = tf.read()
-    
-    replacements = {
-        r'project\s*=\s*"[^"]+"': f'project = "{data["project_name"]}"',
-        r'name\s*=\s*"[^"]+"': f'name = "{data["project_name"]}-vm"',
-        r'machine_type\s*=\s*"[^"]+"': f'machine_type = "{data["machine_type"]}"',
-        r'zone\s*=\s*"[^"]+"': f'zone = "{data["zone"]}"',
-        r'image\s*=\s*"[^"]+"': f'image = "debian-cloud/{data["image"].lower().replace(" ", "-")}"',
-        r'network\s*=\s*"[^"]+"': f'network = "{data["network"]}"'
-    }
-    
-    for pattern, replacement in replacements.items():
-        tf_content = re.sub(pattern, replacement, tf_content)
-    
-    
-    with open(tf_file, 'w') as tf:
-        tf.write(tf_content)
-    
-    return(f"Wygenerowano {tf_file} na podstawie {tf_template}")
+
+    operations = data.get("operation", "").split(",")
+
+    for operation in operations:
+        tf_template_path = os.path.join(template_folder, f"{operation}.tf")
+        tf_output_path = os.path.join("temp", f"output_{operation}.tf")
+
+        if not os.path.exists(tf_template_path):
+            print(f"Plik {tf_template_path} nie istnieje, pomijam.")
+            continue
+
+        with open(tf_template_path, 'r') as tf:
+            tf_content = tf.read()
+
+        replacements = {}
+        
+        if operation == "create_machine":
+            replacements = {
+                r'project\s*=\s*"[^"]+"': f'project = "{data.get("project", "")}"',
+                r'name\s*=\s*"[^"]+"': f'name = "{data.get("name", "")}-vm"',
+                r'machine_type\s*=\s*"[^"]+"': f'machine_type = "{data.get("machine_type", "")}"',
+                r'zone\s*=\s*"[^"]+"': f'zone = "{data.get("zone", "")}"',
+                r'image\s*=\s*"[^"]+"': f'image = "debian-cloud/{data.get("image", "").lower().replace(" ", "-")}"',
+                r'network\s*=\s*"[^"]+"': f'network = "{data.get("network", "")}"'
+            }
+        
+        elif operation == "create_bucket":
+            replacements = {
+                r'project\s*=\s*"[^"]+"': f'project = "{data.get("project", "")}"',
+                r'location\s*=\s*"[^"]+"': f'location = "{data.get("location", "")}"'
+            }
+
+        for pattern, replacement in replacements.items():
+            tf_content = re.sub(pattern, replacement, tf_content)
+
+        with open(tf_output_path, 'w') as tf:
+            tf.write(tf_content)
+
+        print(f"Wygenerowano {tf_output_path} na podstawie {tf_template_path}")
 
 # Wykonanie kodu Terraform
 # Póki co zakomentowane na potrzeby testów

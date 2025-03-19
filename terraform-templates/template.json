@@ -1,7 +1,10 @@
 {
-  "project_name": "modern-rhythm-444518-n9",
-  "machine_type": "e2-micro",
-  "zone": "us-central1-a",
-  "image": "debian-12",
-  "network": "default"
+  "operation": "create_machine,create_bucket,itp",
+  "project": "",
+  "machine_type": "",
+  "zone": "",
+  "image": "",
+  "network": "",
+  "name": "",
+  "location": ""
 }
