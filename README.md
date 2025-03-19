@@ -13,3 +13,4 @@ University project
 - Poprawa strony (Dodanie logowania, dodania zapisywania ustawień takich jak nazwa żeby nie musieć podawać ich cały czas)
 - Support innych platform
 - Dodanie możliwości sprawdzenia składni terraform bez używania google clouda
+- Dodanie Widoku juz istiejącej infrastruktury na google clouda
