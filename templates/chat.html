@@ -14,18 +14,24 @@
     <div class="theme-toggle">
         <button id="theme-button" class="theme-btn">🌙</button>
     </div>
-    <div class="container chat-container">
-        <h2 class="text-center mb-4">Zarządzanie chmurą obliczeniową</h2>
-        <div id="chat-box" class="chat-box"></div>
-        <div class="input-group">
-            <input type="text" id="user-input" class="form-control" placeholder="Wpisz swoją wiadomość...">
-            <button id="send-button" class="btn btn-success">Wyślij</button>
-        </div>
-        <!-- Sekcja podglądu i edycji JSON -->
-        <div id="json-review" style="display: none; margin-top:20px;">
-            <h4>Podgląd wygenerowanego JSON:</h4>
-            <textarea id="json-editor" rows="10" style="width: 100%;"></textarea>
-            <button id="approve-button" class="btn btn-primary mt-2">Zatwierdź JSON</button>
+    <div class="container vertical-center">
+        <div class="container chat-container">
+            <h2 class="text-center mb-4" style="font-family: Tahoma; font-weight: bold">Zarządzanie chmurą obliczeniową</h2>
+            <div id="chat-box" class="chat-box"></div>
+            <div class="input-group">
+                <input type="text" id="user-input" placeholder="Wpisz swoją wiadomość...">
+                <button   on id="send-button" class="btn btn-success">
+                    <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 22L16 10M16 10L11 15M16 10L21 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </button>
+            </div>
+            <!-- Sekcja podglądu i edycji JSON -->
+            <div id="json-review" style="display: none; margin-top:20px;">
+                <h4>Podgląd wygenerowanego JSON:</h4>
+                <textarea id="json-editor" rows="10" style="width: 100%;"></textarea>
+                <button id="approve-button" class="btn btn-primary mt-2">Zatwierdź JSON</button>
+            </div>
         </div>
     </div>
 </body>
