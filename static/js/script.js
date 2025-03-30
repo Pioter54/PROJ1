@@ -35,10 +35,10 @@ function sendMessage() {
         })
         .then(response => response.json())
         .then(data => {
-            // Jeśli zwrócono wygenerowany JSON, wyświetl go do zatwierdzenia
             if (data.json_code) {
                 jsonEditor.value = data.json_code;
-                jsonReview.style.display = 'block';
+                const modal = new bootstrap.Modal(document.getElementById('jsonModal'));
+                modal.show();
             } else {
                 appendMessage("Nie udało się wygenerować kodu JSON.", 'bot');
             }
@@ -71,10 +71,13 @@ approveButton.addEventListener('click', () => {
         })
         .then(response => response.json())
         .then(data => {
-            appendMessage(data.response, 'bot');
+            document.getElementById('terraform-output').textContent = data.response;
+            const terraformModal = new bootstrap.Modal(document.getElementById('terraformModal'));
+            terraformModal.show();
             appendMessage(data.terraform_result, 'bot');
-            // Ukryj sekcję edycji JSON po zatwierdzeniu
-            jsonReview.style.display = 'none';
+            const modalElement = document.getElementById('jsonModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            modalInstance.hide();
         })
         .catch(error => {
             console.error('Error:', error);
@@ -82,3 +85,4 @@ approveButton.addEventListener('click', () => {
         });
     }
 });
+

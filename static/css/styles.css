@@ -69,11 +69,8 @@ input:focus {
     border: none;
     color: white;
     transition: background-color 0.3s;
-    border-radius: 100%;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
+    border-radius: 1.5rem;
+    padding: 10px 20px;
 }
 
 .input-group button:hover {
@@ -158,4 +155,9 @@ input:focus {
 
 .dark-theme .message {
     color: #fff;
+}
+
+.dark-theme #terraform-output {
+    background-color: #222;
+    color: #f8f9fa;
 }

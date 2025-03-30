@@ -24,10 +24,10 @@ def approve_json():
     approved_json = request.json.get('json_code')
     # Zapisujemy zatwierdzony JSON do pliku
     save_json_to_file(approved_json)
-    terraform_query = update_terraform_from_json("main.json", "terraform-templates")
+    terraform_query = update_terraform_from_json("temp/output.json", "terraform-templates")
     terraform_result = execute_terraform()
     return jsonify({
-        "response": f"Oto kod, który został zastosowany: {terraform_query}",
+        "response": f"{terraform_query}",
         "terraform_result": terraform_result
     })
 

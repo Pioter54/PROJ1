@@ -25,7 +25,7 @@ def generate_json(langchain_client, prompt):
         example_json = json_file.read()
     messages = [
         {"role": "system",
-         "content": f"Na podstawie wiadomości użytkownika określ, jaką infrastrukturę chce utworzyć (np. vm, database, storage, network, other). Następnie wyodrębnij kluczowe informacje i zapisz je w formacie JSON. Jeśli użytkownik nie podał konkretnej wartości, pomiń ją. Nazwy zmiennych utrzymuj w formacie terraformowym, po angielsku. Nie dodawaj wyjaśnień, wstępu ani dodatkowego tekstu. W odpowiedzi generuj wyłącznie plik json. Przykładowy format: {example_json}"},
+         "content": f"Na podstawie wiadomości użytkownika określ, jaką infrastrukturę chce utworzyć (np. vm, database, storage). Następnie wypisz tylko potrzebne dane w formacie JSON, bez pustych ani zbędnych pól. Użyj nazw pól zgodnych z Terraformem. Nie dodawaj tekstu ani wyjaśnień, tylko czysty JSON. Przykład formatu (tylko orientacyjnie): {example_json}"},
         {"role": "user", "content": prompt}
     ]
 
@@ -72,8 +72,9 @@ def update_terraform_from_json(json_file, template_folder):
 
         elif operation == "create_bucket":
             replacements = {
-                r'project\s*=\s*"[^"]+"': f'project = "{data.get("project", "")}"',
-                r'location\s*=\s*"[^"]+"': f'location = "{data.get("location", "")}"'
+                r'name\s*=\s*"[^"]+"': f'name = "{data.get("name", "")}-vm"',
+                r'location\s*=\s*"[^"]+"': f'location = "{data.get("location", "")}"',
+                r'storage_class\s*=\s*"[^"]+"': f'storage_class = "{data.get("storage_class", "")}"',
             }
 
         for pattern, replacement in replacements.items():
@@ -82,7 +83,7 @@ def update_terraform_from_json(json_file, template_folder):
         with open(tf_output_path, 'w') as tf:
             tf.write(tf_content)
 
-        print(f"Wygenerowano {tf_output_path} na podstawie {tf_template_path}")
+        return tf_content
 
 
 # Wykonanie kodu Terraform
