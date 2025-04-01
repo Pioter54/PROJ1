@@ -14,3 +14,9 @@ University project
 - Support innych platform
 - Dodanie możliwości sprawdzenia składni terraform bez używania google clouda
 - Dodanie Widoku juz istiejącej infrastruktury na google clouda
+
+## Notatki po spotkaniu [01.04.2025]
+
+- [ ] Dodać więcej info parametrów od terraforma co się dzieje, można dodać odpytywanie od api cloud providera
+- [ ] Poprawić prasowanie
+- [ ] Możliwość smalltalku z agentem, czyli całkowity rework promptu wejściowego XD, jak się uda to git
