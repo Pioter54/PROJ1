@@ -161,3 +161,17 @@ input:focus {
     background-color: #222;
     color: #f8f9fa;
 }
+
+.alert {
+    border-radius: 1.5rem;
+    margin: 10px 0;
+}
+
+a {
+    color: #28a745;
+    text-decoration: none;
+}
+
+.dark-theme a {
+    color: #00e87e;
+}
