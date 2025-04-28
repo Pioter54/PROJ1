@@ -81,12 +81,14 @@ def chat():
     client = initialize_langchain()
     user_input = request.json.get('message')
     generated_json = generate_json(client, user_input)
+    # Zwracamy JSON do wyświetlenia użytkownikowi
     return jsonify({"json_code": generated_json})
 
 @app.route('/approve_json', methods=['POST'], endpoint='approve_json_endpoint')
 @login_required
 def approve_json():
     approved_json = request.json.get('json_code')
+    # Zapisujemy zatwierdzony JSON do pliku
     save_json_to_file(approved_json)
     terraform_query = update_terraform_from_json("temp/output.json", "terraform-templates")
     terraform_result = execute_terraform()
