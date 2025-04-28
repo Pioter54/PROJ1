@@ -97,5 +97,34 @@ def approve_json():
         "terraform_result": terraform_result
     })
 
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    user = User.query.get(session['user_id'])
+    
+    if request.method == 'POST':
+        new_username = request.form['username']
+        new_password = request.form['password']
+        new_project = request.form['project_name']
+        
+        # Sprawdź unikalność nazwy użytkownika
+        if User.query.filter(User.username == new_username, User.id != user.id).first():
+            return render_template('profile.html', 
+                                 user=user, 
+                                 error='Nazwa użytkownika jest już zajęta')
+        
+        # Aktualizuj dane
+        user.username = new_username
+        user.project_name = new_project
+        
+        if new_password:
+            user.password = generate_password_hash(new_password)
+        
+        db.session.commit()
+        session['project_name'] = new_project  # Aktualizuj nazwę projektu w sesji
+        return redirect(url_for('profile', success='Dane zostały zaktualizowane'))
+    
+    return render_template('profile.html', user=user)
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
