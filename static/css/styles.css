@@ -9,6 +9,14 @@ body, html {
     color: #1f2937;
 }
 
+/* transitions :DDDD */
+div, .form-control, body {
+    transition: color 0.17s ease-in-out,
+    background-color 0.17s ease-in-out,
+    border-color 0.17s ease-in-out,
+    box-shadow 0.17s ease-in-out;
+}
+
 a {
     text-decoration: none;
     color: #3b82f6;
@@ -47,7 +55,6 @@ a:hover {
 .nav-link {
     padding: 10px 15px;
     border-radius: 8px;
-    transition: background 0.2s;
     color: #1f2937;
 }
 
@@ -190,7 +197,7 @@ a:hover {
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background: #f9fafb;
+    background: inherit;
 }
 
 .form-container {
@@ -401,4 +408,8 @@ body.dark-theme .text-muted {
 
 .dark-theme .btn-close {
     color: #e0e0e0;
+}
+
+.dark-theme .form-control::placeholder {
+    color: #888;
 }
