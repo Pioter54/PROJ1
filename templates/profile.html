@@ -50,7 +50,12 @@
 
             <div class="mb-3">
                 <label class="form-label">Nazwa projektu</label>
-                <input type="text" class="form-control" name="project_name" value="{{ user.project_name }}" required>
+                <input type="text" class="form-control" name="project_name" value="{{ user.project_name }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Lokalizacja</label>
+                <input type="text" class="form-control" name="location" value="{{ user.location }}">
             </div>
 
             <button type="submit" class="btn btn-primary">Zapisz zmiany</button>

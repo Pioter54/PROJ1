@@ -125,7 +125,6 @@ a:hover {
 /* Chat box */
 .chat-box {
     flex-grow: 1;
-    background: #f9fafb;
     border-radius: 16px;
     padding: 20px;
     overflow-y: auto;
@@ -302,6 +301,10 @@ a:hover {
     transition: background-color 0.2s;
 }
 
+.btn-primary:hover {
+    text-decoration: none;
+}
+
 /* Motyw ciemny */
 body.dark-theme {
     background: #171717;
@@ -330,7 +333,6 @@ body.dark-theme .form-container {
 }
 
 body.dark-theme .chat-box {
-    background: #212121;
     color: #e0e0e0;
 }
 

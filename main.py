@@ -19,13 +19,13 @@ def initialize_langchain():
 # Przykładowy prompt: "Stwórz mi najtańszą maszynę gcp, nazwa projektu to modern-rhythm-444518-n9 a obraz maszyny użyj Debian 12, typem maszyny e2-micro, w strefie us-central1-a, z domyślną siecią i publicznym adresem IP."
 def generate_json(langchain_client, prompt):
     file_path = './terraform-templates/template.json'
-
+    print(prompt)
     # Wczytaj przykładowy JSON jako wzór
     with open(file_path, 'r') as json_file:
         example_json = json_file.read()
     messages = [
         {"role": "system",
-         "content": f"Na podstawie wiadomości użytkownika określ, jaką infrastrukturę chce utworzyć (np. vm, database, storage). Następnie wypisz tylko potrzebne dane w formacie JSON, bez pustych ani zbędnych pól. Użyj nazw pól zgodnych z Terraformem. Nie dodawaj tekstu ani wyjaśnień, tylko czysty JSON. Przykład formatu (tylko orientacyjnie): {example_json}"},
+         "content": f"Na podstawie wiadomości użytkownika określ, jaką infrastrukturę chce utworzyć (np. vm, database, storage). Następnie wypisz tylko potrzebne dane w formacie JSON, bez pustych ani zbędnych pól. Użyj nazw pól zgodnych z Terraformem. Nie dodawaj tekstu ani wyjaśnień, tylko czysty JSON. Przykład formatu: {example_json}, najważniejsze jest operation, dopasuj podany location do region i zone, location jest nadrzędne"},
         {"role": "user", "content": prompt}
     ]
 
@@ -63,6 +63,7 @@ def update_terraform_from_json(json_file, template_folder):
         if operation == "create_machine":
             replacements = {
                 r'project\s*=\s*"[^"]+"': f'project = "{data.get("project", "")}"',
+                r'region\s*=\s*"[^"]+"': f'region = "{data.get("region", "")}"',
                 r'name\s*=\s*"[^"]+"': f'name = "{data.get("name", "")}-vm"',
                 r'machine_type\s*=\s*"[^"]+"': f'machine_type = "{data.get("machine_type", "")}"',
                 r'zone\s*=\s*"[^"]+"': f'zone = "{data.get("zone", "")}"',

@@ -16,7 +16,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    project_name = db.Column(db.String(120), nullable=False)
+    project_name = db.Column(db.String(120), nullable=True)
+    location = db.Column(db.String(120), nullable=True)
 
 with app.app_context():
     db.create_all()
@@ -45,6 +46,7 @@ def login():
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
             session['project_name'] = user.project_name
+            session['location'] = user.location
             return redirect(url_for('index'))
         return render_template('login.html', error='Nieprawidłowy login lub hasło')
     return render_template('login.html')
@@ -54,7 +56,6 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = generate_password_hash(request.form['password'])
-        project_name = request.form['project_name']
         
         if User.query.filter_by(username=username).first():
             return render_template('register.html', error='Użytkownik już istnieje')
@@ -62,7 +63,6 @@ def register():
         new_user = User(
             username=username,
             password=password,
-            project_name=project_name
         )
         db.session.add(new_user)
         db.session.commit()
@@ -80,7 +80,11 @@ def logout():
 def chat():
     client = initialize_langchain()
     user_input = request.json.get('message')
-    generated_json = generate_json(client, user_input)
+    project_name = session.get('project_name', '')
+    location = session.get('location', '')
+    prompt = f"{user_input} moje szczegóły: project:{project_name}, location:{location}"
+    print(f"Prompt: {prompt}")
+    generated_json = generate_json(client, prompt)
     # Zwracamy JSON do wyświetlenia użytkownikowi
     return jsonify({"json_code": generated_json})
 
@@ -106,6 +110,7 @@ def profile():
         new_username = request.form['username']
         new_password = request.form['password']
         new_project = request.form['project_name']
+        new_location = request.form['location']
         
         # Sprawdź unikalność nazwy użytkownika
         if User.query.filter(User.username == new_username, User.id != user.id).first():
@@ -116,12 +121,16 @@ def profile():
         # Aktualizuj dane
         user.username = new_username
         user.project_name = new_project
+        user.location = new_location
         
         if new_password:
             user.password = generate_password_hash(new_password)
         
         db.session.commit()
-        session['project_name'] = new_project  # Aktualizuj nazwę projektu w sesji
+
+        session['project_name'] = new_project
+        session['location'] = new_location
+
         return redirect(url_for('profile', success='Dane zostały zaktualizowane'))
     
     return render_template('profile.html', user=user)
