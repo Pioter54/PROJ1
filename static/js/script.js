@@ -8,10 +8,30 @@ const jsonReview = document.getElementById('json-review');
 const jsonEditor = document.getElementById('json-editor');
 const approveButton = document.getElementById('approve-button');
 
-themeButton.addEventListener('click', () => {
-    body.classList.toggle('dark-theme');
-    themeButton.textContent = body.classList.contains('dark-theme') ? '☀️' : '🌙';
-});
+function applyTheme() {
+    if (localStorage.getItem('theme') === 'dark') {
+        body.classList.add('dark-theme');
+        if (themeButton) themeButton.textContent = '☀️';
+    } else {
+        body.classList.remove('dark-theme');
+        if (themeButton) themeButton.textContent = '🌙';
+    }
+}
+
+applyTheme();
+
+if (themeButton) {
+    themeButton.addEventListener('click', () => {
+        body.classList.toggle('dark-theme');
+        if (body.classList.contains('dark-theme')) {
+            localStorage.setItem('theme', 'dark');
+            themeButton.textContent = '☀️';
+        } else {
+            localStorage.setItem('theme', 'light');
+            themeButton.textContent = '🌙';
+        }
+    });
+}
 
 function appendMessage(content, sender) {
     const messageDiv = document.createElement('div');
