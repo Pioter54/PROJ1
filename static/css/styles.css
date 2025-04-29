@@ -11,10 +11,9 @@ body, html {
 
 /* transitions :DDDD */
 div, .form-control, body {
-    transition: color 0.17s ease-in-out,
-    background-color 0.17s ease-in-out,
-    border-color 0.17s ease-in-out,
-    box-shadow 0.17s ease-in-out;
+    transition-property: color, background-color, border-color, box-shadow;
+    transition-duration: 0.17s;
+    transition-timing-function: ease-in-out;
 }
 
 a {
