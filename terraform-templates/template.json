@@ -7,5 +7,6 @@
   "network": "",
   "name": "",
   "location": "",
-  "storage_class": ""
+  "storage_class": "",
+  "region": ""
 }
