@@ -8,84 +8,103 @@ import re
 
 # Inicjalizacja klienta LangChain
 load_dotenv()
+client = ChatOpenAI(
+    model="gpt-3.5-turbo-1106",
+    temperature=0.2,
+    model_kwargs={
+        "functions": [
+            {
+                "name": "create_machine",
+                "description": "Generuje Terraform dla VM na podstawie szablonu create_machine.tf",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "project":      {"type": "string"},
+                        "region":       {"type": "string"},
+                        "zone":         {"type": "string"},
+                        "name":         {"type": "string"},
+                        "machine_type": {"type": "string"},
+                        "image":        {"type": "string"},
+                        "network":      {"type": "string"}
+                    },
+                    "required": ["project", "region", "zone", "name"]
+                }
+            },
+            {
+                "name": "create_bucket",
+                "description": "Generuje Terraform dla GCS bucket na podstawie szablonu create_bucket.tf",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "name":          {"type": "string"},
+                        "location":      {"type": "string"},
+                        "storage_class": {"type": "string"}
+                    },
+                    "required": ["name", "location"]
+                }
+            }
+        ],
+        "function_call": "auto"
+    }
+)
 
+# Template and output directories
+template_dir = Path("./terraform-templates")
+output_dir = Path("./temp")
+output_dir.mkdir(parents=True, exist_ok=True)
 
-def initialize_langchain():
-    return ChatOpenAI(model="gpt-3.5-turbo", temperature=0.2)
+# --- Stub implementations for Terraform generation ---
+def create_machine(params: dict) -> str:
+    src = template_dir / "create_machine.tf"
+    tf = src.read_text()
+    replacements = {
+        r'project\s*=\s*"[^"]+"':        f'project      = "{params.get("project", "")}"',
+        r'region\s*=\s*"[^"]+"':         f'region       = "{params.get("region", "")}"',
+        r'zone\s*=\s*"[^"]+"':           f'zone         = "{params.get("zone", "")}"',
+        r'name\s*=\s*"[^"]+"':           f'name         = "{params.get("name", "")}-vm"',
+        r'machine_type\s*=\s*"[^"]+"':   f'machine_type = "{params.get("machine_type", "")}"',
+        r'image\s*=\s*"[^"]+"':          f'image        = "debian-cloud/{params.get("image", "").lower().replace(" ", "-")}"',
+        r'network\s*=\s*"[^"]+"':        f'network      = "{params.get("network", "")}"'
+    }
+    for pat, repl in replacements.items():
+        tf = re.sub(pat, repl, tf)
+    out_path = output_dir / "output_create_machine.tf"
+    out_path.write_text(tf)
+    return tf
 
+def create_bucket(params: dict) -> str:
+    src = template_dir / "create_bucket.tf"
+    tf = src.read_text()
+    replacements = {
+        r'name\s*=\s*"[^"]+"':           f'name          = "{params.get("name", "")}-bucket"',
+        r'location\s*=\s*"[^"]+"':       f'location      = "{params.get("location", "")}"',
+        r'storage_class\s*=\s*"[^"]+"':  f'storage_class = "{params.get("storage_class", "")}"'
+    }
+    for pat, repl in replacements.items():
+        tf = re.sub(pat, repl, tf)
+    out_path = output_dir / "output_create_bucket.tf"
+    out_path.write_text(tf)
+    return tf
 
-# Generowanie pliku JSON na podstawie wiadomości użytkownika
-# Można to lekko poprawić żeby generowany plik był bardziej uniwersalny
-# Przykładowy prompt: "Stwórz mi najtańszą maszynę gcp, nazwa projektu to modern-rhythm-444518-n9 a obraz maszyny użyj Debian 12, typem maszyny e2-micro, w strefie us-central1-a, z domyślną siecią i publicznym adresem IP."
-def generate_json(langchain_client, prompt):
-    file_path = './terraform-templates/template.json'
-    print(prompt)
-    # Wczytaj przykładowy JSON jako wzór
-    with open(file_path, 'r') as json_file:
-        example_json = json_file.read()
+# --- Main chat function ---
+def chat_with_terraform(prompt: str) -> dict:
     messages = [
-        {"role": "system",
-         "content": f"Na podstawie wiadomości użytkownika określ, jaką infrastrukturę chce utworzyć (np. vm, database, storage). Następnie wypisz tylko potrzebne dane w formacie JSON, bez pustych ani zbędnych pól. Użyj nazw pól zgodnych z Terraformem. Nie dodawaj tekstu ani wyjaśnień, tylko czysty JSON. Przykład formatu: {example_json}, najważniejsze jest operation, dopasuj podany location do region i zone, location jest nadrzędne"},
+        {"role": "system", "content": (
+            "Jesteś asystentem, który rozumie, kiedy należy wygenerować dane wejściowe do szablonu Terraform "
+            "(create_machine lub create_bucket), a kiedy po prostu rozmawiać."
+        )},
         {"role": "user", "content": prompt}
     ]
+    response = client.invoke(messages)
+    func_call = response.additional_kwargs.get("function_call")
 
-    response = langchain_client.invoke(messages)
+    if func_call:
+        return {
+            "type": func_call.get("name"),
+            "params": json.loads(func_call.get("arguments", "{}"))
+        }
 
-    return response.content.strip()
-
-
-# Zapisywanie JSON do pliku
-def save_json_to_file(json_code, file_path="temp/output.json"):
-    with open(file_path, "w") as json_file:
-        json_file.write(json_code)
-
-
-# Aktualizacja template Terraform na podstawie pliku JSON i zapisywanie go jako nowu plik
-def update_terraform_from_json(json_file, template_folder):
-    with open(json_file, 'r') as jf:
-        data = json.load(jf)
-
-    operations = data.get("operation", "").split(",")
-
-    for operation in operations:
-        tf_template_path = os.path.join(template_folder, f"{operation}.tf")
-        tf_output_path = os.path.join("temp", f"output_{operation}.tf")
-
-        if not os.path.exists(tf_template_path):
-            print(f"Plik {tf_template_path} nie istnieje, pomijam.")
-            continue
-
-        with open(tf_template_path, 'r') as tf:
-            tf_content = tf.read()
-
-        replacements = {}
-
-        if operation == "create_machine":
-            replacements = {
-                r'project\s*=\s*"[^"]+"': f'project = "{data.get("project", "")}"',
-                r'region\s*=\s*"[^"]+"': f'region = "{data.get("region", "")}"',
-                r'name\s*=\s*"[^"]+"': f'name = "{data.get("name", "")}-vm"',
-                r'machine_type\s*=\s*"[^"]+"': f'machine_type = "{data.get("machine_type", "")}"',
-                r'zone\s*=\s*"[^"]+"': f'zone = "{data.get("zone", "")}"',
-                r'image\s*=\s*"[^"]+"': f'image = "debian-cloud/{data.get("image", "").lower().replace(" ", "-")}"',
-                r'network\s*=\s*"[^"]+"': f'network = "{data.get("network", "")}"'
-            }
-
-        elif operation == "create_bucket":
-            replacements = {
-                r'name\s*=\s*"[^"]+"': f'name = "{data.get("name", "")}-vm"',
-                r'location\s*=\s*"[^"]+"': f'location = "{data.get("location", "")}"',
-                r'storage_class\s*=\s*"[^"]+"': f'storage_class = "{data.get("storage_class", "")}"',
-            }
-
-        for pattern, replacement in replacements.items():
-            tf_content = re.sub(pattern, replacement, tf_content)
-
-        with open(tf_output_path, 'w') as tf:
-            tf.write(tf_content)
-
-        return tf_content
-
+    return {"response": response.content}
 
 # Wykonanie kodu Terraform
 # Póki co zakomentowane na potrzeby testów
@@ -98,9 +117,4 @@ def execute_terraform(directory="."):
     # except subprocess.CalledProcessError as e:
     #     return f"Błąd podczas wykonywania Terraform: {e}"
     return "Kod Terraform został zastosowany."
-
-
-def load_json_template():
-    file_path = './terraform-templates/template.json'
-    data = json.loads(Path(file_path).read_text())
-    return data
+    return {"response": response.content}

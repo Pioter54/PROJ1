@@ -1,108 +1,123 @@
-// script.js
 const themeButton = document.getElementById('theme-button');
 const body = document.body;
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
-const jsonReview = document.getElementById('json-review');
-const jsonEditor = document.getElementById('json-editor');
-const approveButton = document.getElementById('approve-button');
+const terraformModalEl = document.getElementById('terraformModal');
+const generateButton = document.getElementById('generate-tf');
 
+// Motyw
 function applyTheme() {
-    if (localStorage.getItem('theme') === 'dark') {
-        body.classList.add('dark-theme');
-        if (themeButton) themeButton.textContent = '☀️';
-    } else {
-        body.classList.remove('dark-theme');
-        if (themeButton) themeButton.textContent = '🌙';
-    }
+  if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-theme');
+    themeButton.textContent = '☀️';
+  } else {
+    body.classList.remove('dark-theme');
+    themeButton.textContent = '🌙';
+  }
+}
+applyTheme();
+themeButton.addEventListener('click', () => {
+  body.classList.toggle('dark-theme');
+  if (body.classList.contains('dark-theme')) {
+    localStorage.setItem('theme', 'dark');
+    themeButton.textContent = '☀️';
+  } else {
+    localStorage.setItem('theme', 'light');
+    themeButton.textContent = '🌙';
+  }
+});
+
+// Doklejanie wiadomości do czatu
+function appendMessage(content, sender) {
+  const wrapper = document.createElement('div');
+  wrapper.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+  wrapper.textContent = content;
+  chatBox.appendChild(wrapper);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-applyTheme();
+// Wysłanie wiadomości i obsługa odpowiedzi
+function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
+  appendMessage(message, 'user');
+  userInput.value = '';
 
-if (themeButton) {
-    themeButton.addEventListener('click', () => {
-        body.classList.toggle('dark-theme');
-        if (body.classList.contains('dark-theme')) {
-            localStorage.setItem('theme', 'dark');
-            themeButton.textContent = '☀️';
-        } else {
-            localStorage.setItem('theme', 'light');
-            themeButton.textContent = '🌙';
-        }
+  fetch('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message })
+  })
+    .then(r => r.json())
+    .then(data => {
+      console.log("Odpowiedź z /chat:", data);
+      if (data.response) {
+        appendMessage(data.response, 'bot');
+        return;
+      }
+
+      const { type, params } = data;
+      generateDynamicForm(type, params);
+      const modal = new bootstrap.Modal(terraformModalEl);
+      modal.show();
+    })
+    .catch(err => {
+      console.error(err);
+      appendMessage('Wystąpił błąd sieci – spróbuj ponownie.', 'bot');
     });
 }
 
-function appendMessage(content, sender) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
-    messageDiv.textContent = content;
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+// Generowanie dynamicznego formularza
+function generateDynamicForm(type, params) {
+  const form = document.getElementById('terraform-form');
+  if (!form) {
+    console.error("Brakuje formularza #terraform-form w HTML.");
+    return;
+  }
+
+  form.innerHTML = '';
+  form.dataset.type = type;
+
+  for (const [key, value] of Object.entries(params)) {
+    const field = document.createElement('div');
+    field.className = 'mb-3';
+    field.innerHTML = `
+      <label for="input-${key}" class="form-label">${key}</label>
+      <input type="text" class="form-control" id="input-${key}" name="${key}" value="${value || ''}">
+    `;
+    form.appendChild(field);
+  }
 }
 
-function sendMessage() {
-    const message = userInput.value.trim();
-    if (message) {
-        appendMessage(message, 'user');
-        userInput.value = '';
-        fetch('/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.json_code) {
-                jsonEditor.value = data.json_code;
-                const modal = new bootstrap.Modal(document.getElementById('jsonModal'));
-                modal.show();
-            } else {
-                appendMessage("Nie udało się wygenerować kodu JSON.", 'bot');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            appendMessage('Wystąpił błąd. Spróbuj ponownie.', 'bot');
-        });
-    }
-}
+// Obsługa przycisku generowania Terraform
+generateButton.addEventListener('click', () => {
+  const form = document.getElementById('terraform-form');
+  const formData = {};
+  const type = form.dataset.type;
 
+  Array.from(form.elements).forEach(el => {
+    if (el.name) formData[el.name] = el.value;
+  });
+
+  fetch('/generate_tf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, params: formData })
+  })
+    .then(r => r.json())
+    .then(data => {
+      appendMessage("Wygenerowano:\n" + data.result, 'bot');
+      bootstrap.Modal.getInstance(terraformModalEl).hide();
+    })
+    .catch(err => {
+      console.error(err);
+      appendMessage("Błąd podczas generowania pliku Terraform.", 'bot');
+    });
+});
+
+// Hooki na przycisk i Enter
 sendButton.addEventListener('click', sendMessage);
-
-userInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        sendMessage();
-    }
+userInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
 });
-
-// Obsługa zatwierdzenia JSON przez użytkownika
-approveButton.addEventListener('click', () => {
-    const approvedJson = jsonEditor.value.trim();
-    if (approvedJson) {
-        fetch('/approve_json', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ json_code: approvedJson }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('terraform-output').textContent = data.response;
-            const terraformModal = new bootstrap.Modal(document.getElementById('terraformModal'));
-            terraformModal.show();
-            appendMessage(data.terraform_result, 'bot');
-            const modalElement = document.getElementById('jsonModal');
-            const modalInstance = bootstrap.Modal.getInstance(modalElement);
-            modalInstance.hide();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            appendMessage('Wystąpił błąd podczas zatwierdzania JSON.', 'bot');
-        });
-    }
-});
-

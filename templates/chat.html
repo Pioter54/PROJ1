@@ -18,7 +18,6 @@
   <a href="{{ url_for('profile') }}" class="profile-icon" title="Profil"></a>
 </div>
 
-
 <div class="app-wrapper">
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -51,40 +50,23 @@
     </main>
 </div>
 
-<!-- JSON Modal -->
-<div class="modal fade" id="jsonModal" tabindex="-1" aria-labelledby="jsonModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="jsonModalLabel">Podgląd JSON</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zamknij"></button>
-            </div>
-            <div class="modal-body">
-                <textarea id="json-editor" class="form-control" rows="10"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button id="approve-button" class="btn btn-primary">Zatwierdź JSON</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Terraform Modal -->
 <div class="modal fade" id="terraformModal" tabindex="-1" aria-labelledby="terraformModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="terraformModalLabel">Wynik działania Terraform</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zamknij"></button>
-            </div>
-            <div class="modal-body">
-                <pre id="terraform-output" class="p-3 bg-light border rounded" style="white-space: pre-wrap;"></pre>
-            </div>
-            <div class="modal-footer">
-                <button data-bs-dismiss="modal" class="btn btn-primary">Zamknij</button>
-            </div>
-        </div>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="terraformModalLabel">Dane zasobu Terraform</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zamknij"></button>
+      </div>
+      <div class="modal-body">
+        <form id="terraform-form" class="needs-validation" novalidate></form>
+      </div>
+      <div class="modal-footer">
+        <button id="generate-tf" class="btn btn-success">Zatwierdź i wygeneruj</button>
+        <button data-bs-dismiss="modal" class="btn btn-secondary">Anuluj</button>
+      </div>
     </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
