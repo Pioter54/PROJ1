@@ -121,3 +121,17 @@ sendButton.addEventListener('click', sendMessage);
 userInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMessage();
 });
+
+function toggleProjectActive(projectId) {
+    fetch(`/toggle_project/${projectId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ toggle: true })
+    }).then(response => {
+        if (!response.ok) {
+            alert('Nie udało się zmienić statusu projektu.');
+        }
+    });
+}

@@ -16,8 +16,15 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    project_name = db.Column(db.String(120), nullable=True)
-    location = db.Column(db.String(120), nullable=True)
+
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    location = db.Column(db.String(250), default="")
+    active = db.Column(db.Boolean, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    user = db.relationship('User', backref=db.backref('projects', lazy=True))
 
 with app.app_context():
     db.create_all()
@@ -44,8 +51,6 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
-            session['project_name'] = user.project_name or ''
-            session['location'] = user.location or ''
             return redirect(url_for('index'))
         return render_template('login.html', error='Nieprawidłowy login lub hasło')
     return render_template('login.html')
@@ -107,6 +112,7 @@ def generate_tf():
 @login_required
 def profile():
     user = User.query.get(session['user_id'])
+    project = Project.query.filter_by(user_id=user.id, active=True).first()
     if request.method == 'POST':
         new_username = request.form['username']
         new_password = request.form['password']
@@ -115,8 +121,8 @@ def profile():
         if User.query.filter(User.username == new_username, User.id != user.id).first():
             return render_template('profile.html', user=user, error='Nazwa użytkownika jest już zajęta')
         user.username     = new_username
-        user.project_name = new_project
-        user.location     = new_location
+        project.name = new_project
+        project.location = new_location
         if new_password:
             user.password = generate_password_hash(new_password)
         db.session.commit()
@@ -125,6 +131,41 @@ def profile():
         return redirect(url_for('profile', success='Dane zostały zaktualizowane'))
     return render_template('profile.html', user=user)
 
+@app.route("/create_project", methods=["POST"])
+@login_required
+def create_project():
+    name = request.form.get("project_name")
+    location = request.form.get("location")
+    if name and location:
+        new_project = Project(
+            name=name,
+            location=location,
+            user_id=session['user_id']
+        )
+        db.session.add(new_project)
+        db.session.commit()
+    return redirect(url_for("profile"))
+
+@app.route("/toggle_project/<int:project_id>", methods=["POST"])
+@login_required
+def toggle_project(project_id):
+    user_id = session['user_id']
+
+    Project.query.filter_by(user_id=user_id, active=True).update({Project.active: False})
+    
+    project = Project.query.filter_by(id=project_id, user_id=user_id).first_or_404()
+    project.active = True
+    db.session.commit()
+
+    session['project_name'] = project.name
+    session['location'] = project.location
+
+    print("Ustawiam sesję:")
+    print("project_name =", project.name)
+    print("location =", project.location)
+
+
+    return jsonify({"status": "ok", "active": True})
 
 
 if __name__ == '__main__':

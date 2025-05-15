@@ -32,7 +32,7 @@ client = ChatOpenAI(
             },
             {
                 "name": "create_bucket",
-                "description": "Generuje Terraform dla GCS bucket na podstawie szablonu create_bucket.tf",
+                "description": "Generuje Terraform dla GPC bucket na podstawie szablonu create_bucket.tf",
                 "parameters": {
                     "type": "object",
                     "properties": {

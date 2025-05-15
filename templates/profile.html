@@ -48,20 +48,79 @@
                 <input type="password" class="form-control" name="password" placeholder="Pozostaw puste, aby nie zmieniać">
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Nazwa projektu</label>
-                <input type="text" class="form-control" name="project_name" value="{{ user.project_name }}">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Lokalizacja</label>
-                <input type="text" class="form-control" name="location" value="{{ user.location }}">
-            </div>
-
             <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
         </form>
+        <div class="d-flex justify-content-between align-items-center mt-5">
+            <h3>Twoje projekty</h3>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                + Nowy projekt
+            </button>
+        </div>
+        <table class="table table-bordered mt-3">
+            <thead class="table-light">
+                <tr>
+                    <th>Nazwa projektu</th>
+                    <th>Status</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in user.projects %}
+                <tr data-bs-toggle="collapse" data-bs-target="#details-{{ project.id }}" class="clickable-row" aria-expanded="false" aria-controls="details-{{ project.id }}">
+                    <td>{{ project.name }}</td>
+                    <td>
+                        <input type="checkbox"
+                            class="form-check-input"
+                            {% if project.active %}checked{% endif %}
+                            onchange="toggleProjectActive({{ project.id }})">
+                        <label class="form-check-label">Aktywny</label>
+                    </td>
+                    <td><button class="btn btn-sm btn-outline-secondary" type="button">Rozwiń</button></td>
+                </tr>
+                <tr class="collapse" id="details-{{ project.id }}">
+                    <td colspan="3">
+                        <strong>Opis:</strong> {{ project.description or "Brak opisu." }}<br>
+                        <strong>ID projektu:</strong> {{ project.id }}<br>
+                        <strong>Utworzony przez użytkownika:</strong> {{ project.user.username }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+
     </div>
 </div>
+<!-- Modal: Tworzenie nowego projektu -->
+<div class="modal fade" id="createProjectModal" tabindex="-1" aria-labelledby="createProjectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ url_for('create_project') }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createProjectModalLabel">Nowy projekt</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zamknij"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="project_name" class="form-label">Nazwa projektu</label>
+            <input type="text" class="form-control" id="project_name" name="project_name" required>
+          </div>
+          <div class="mb-3">
+            <label for="location" class="form-label">Lokalizacja</label>
+            <input type="text" class="form-control" id="location" name="location" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Utwórz</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
 
 </body>
 </html>
