@@ -56,39 +56,43 @@
                 + Nowy projekt
             </button>
         </div>
-        <table class="table table-bordered mt-3">
-            <thead class="table-light">
-                <tr>
-                    <th>Nazwa projektu</th>
-                    <th>Status</th>
-                    <th>Akcje</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for project in user.projects %}
-                <tr data-bs-toggle="collapse" data-bs-target="#details-{{ project.id }}" class="clickable-row" aria-expanded="false" aria-controls="details-{{ project.id }}">
-                    <td>{{ project.name }}</td>
-                    <td>
-                        <input type="checkbox"
-                            class="form-check-input"
-                            {% if project.active %}checked{% endif %}
-                            onchange="toggleProjectActive({{ project.id }})">
-                        <label class="form-check-label">Aktywny</label>
-                    </td>
-                    <td><button class="btn btn-sm btn-outline-secondary" type="button">Rozwiń</button></td>
-                </tr>
-                <tr class="collapse" id="details-{{ project.id }}">
-                    <td colspan="3">
-                        <strong>Opis:</strong> {{ project.description or "Brak opisu." }}<br>
-                        <strong>ID projektu:</strong> {{ project.id }}<br>
-                        <strong>Utworzony przez użytkownika:</strong> {{ project.user.username }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
+        <table class="table table-striped table-hover mt-3">
+          <thead>
+            <tr>
+              <th>Nazwa projektu</th>
+              <th>Status</th>
+              <th>Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for project in user.projects %}
+            <tr>
+              <td>{{ project.name }}</td>
+              <td>
+                <div class="form-check form-switch">
+                  <input class="form-check-input project-switch"
+                        type="checkbox"
+                        {% if project.active %}checked{% endif %}
+                        onchange="toggleProjectActive({{ project.id }})">
+                  <label class="form-check-label">Aktywny</label>
+                </div>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary toggle-details" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ project.id }}" aria-expanded="false" aria-controls="details-{{ project.id }}">
+                  Szczegóły
+                </button>
+              </td>
+            </tr>
+            <tr class="collapse" id="details-{{ project.id }}">
+              <td colspan="3">
+                <strong>Lokalizacja:</strong> {{ project.location or "Brak." }}<br>
+                <strong>ID projektu:</strong> {{ project.id }}<br>
+                <strong>Utworzony przez użytkownika:</strong> {{ project.user.username }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
         </table>
-
-
     </div>
 </div>
 <!-- Modal: Tworzenie nowego projektu -->

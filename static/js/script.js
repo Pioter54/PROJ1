@@ -135,3 +135,25 @@ function toggleProjectActive(projectId) {
         }
     });
 }
+
+function toggleProjectActive(projectId) {
+  fetch(`/toggle_project/${projectId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(response => {
+    if (!response.ok) {
+      alert('Nie udało się zmienić statusu projektu.');
+      return;
+    }
+
+    // Odśwież przełączniki po stronie klienta
+    document.querySelectorAll('.project-switch').forEach(sw => {
+      const currentId = parseInt(sw.getAttribute('onchange').match(/\d+/)[0]);
+      sw.checked = (currentId === projectId);
+    });
+  }).catch(err => {
+    console.error("Błąd połączenia z toggle_project:", err);
+  });
+}
