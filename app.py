@@ -167,6 +167,24 @@ def toggle_project(project_id):
 
     return jsonify({"status": "ok", "active": True})
 
+@app.route('/edit_project', methods=['GET', 'POST'])
+@login_required
+def edit_project():
+    user = User.query.get(session['user_id'])
+    project = Project.query.filter_by(user_id=user.id, active=True).first()
+    
+    if not project:
+        return redirect(url_for('profile'))
+    
+    if request.method == 'POST':
+        project.name = request.form['project_name']
+        project.location = request.form['location']
+        db.session.commit()
+        session['project_name'] = project.name
+        session['location'] = project.location
+        return redirect(url_for('index'))
+    
+    return render_template('edit_project.html', project=project)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
