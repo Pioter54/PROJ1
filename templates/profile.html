@@ -86,8 +86,9 @@
             <tr class="collapse" id="details-{{ project.id }}">
               <td colspan="3">
                 <strong>Lokalizacja:</strong> {{ project.location or "Brak." }}<br>
+                <strong>Strefa:</strong> {{ project.zone or "Brak." }}<br> 
                 <strong>ID projektu:</strong> {{ project.id }}<br>
-                <strong>Utworzony przez użytkownika:</strong> {{ project.user.username }}
+                <strong>Utworzony przez użytkownika:</strong> {{ project.user.username }}<br>
               </td>
             </tr>
             {% endfor %}
@@ -95,10 +96,11 @@
         </table>
     </div>
 </div>
+
 <!-- Modal: Tworzenie nowego projektu -->
 <div class="modal fade" id="createProjectModal" tabindex="-1" aria-labelledby="createProjectModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form method="POST" action="{{ url_for('create_project') }}">
+    <form method="POST" action="{{ url_for('create_project') }}" class="needs-validation" novalidate>
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="createProjectModalLabel">Nowy projekt</h5>
@@ -108,10 +110,59 @@
           <div class="mb-3">
             <label for="project_name" class="form-label">Nazwa projektu</label>
             <input type="text" class="form-control" id="project_name" name="project_name" required>
+            <div class="invalid-feedback">
+              Podaj nazwę projektu.
+            </div>
           </div>
+
           <div class="mb-3">
-            <label for="location" class="form-label">Lokalizacja</label>
-            <input type="text" class="form-control" id="location" name="location" required>
+            <label for="modal_location" class="form-label">Lokalizacja</label>
+            <select class="form-select" id="modal_location" name="location" required>
+              <option value="" disabled selected>Wybierz lokalizację</option>
+              <option value="us-west1">us-west1</option>
+              <option value="us-west2">us-west2</option>
+              <option value="us-west3">us-west3</option>
+              <option value="us-west4">us-west4</option>
+              <option value="asia-south1">asia-south1</option>
+              <option value="asia-south2">asia-south2</option>
+              <option value="asia-east1">asia-east1</option>
+              <option value="asia-east2">asia-east2</option>
+              <option value="asia-northeast1">asia-northeast1</option>
+              <option value="asia-northeast2">asia-northeast2</option>
+              <option value="asia-northeast3">asia-northeast3</option>
+              <option value="asia-southeast1">asia-southeast1</option>
+              <option value="australia-southeast1">australia-southeast1</option>
+              <option value="australia-southeast2">australia-southeast2</option>
+              <option value="europe-central2">europe-central2</option>
+              <option value="europe-north2">europe-north2</option>
+              <option value="europe-southwest1">europe-southwest1</option>
+              <option value="europe-west1">europe-west1</option>
+              <option value="europe-west2">europe-west2</option>
+              <option value="europe-west3">europe-west3</option>
+              <option value="europe-west4">europe-west4</option>
+              <option value="europe-west6">europe-west6</option>
+              <option value="europe-west8">europe-west8</option>
+              <option value="europe-west9">europe-west9</option>
+              <option value="northamerica-northeast1">northamerica-northeast1</option>
+              <option value="northamerica-northeast2">northamerica-northeast2</option>
+              <option value="southamerica-east1">southamerica-east1</option>
+              <option value="us-central1">us-central1</option>
+              <option value="us-east1">us-east1</option>
+              <option value="us-east4">us-east4</option>
+            </select>
+            <div class="invalid-feedback">
+              Wybierz lokalizację z listy.
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="modal_zone" class="form-label">Strefa</label>
+            <select class="form-select" id="modal_zone" name="zone" required disabled>
+              <option value="" disabled selected>Najpierw wybierz lokalizację</option>
+            </select>
+            <div class="invalid-feedback">
+              Wybierz strefę z listy.
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -124,7 +175,83 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const zoneData = {
+    'us-west1': ['us-west1-a', 'us-west1-b', 'us-west1-c'],
+    'us-west2': ['us-west2-a', 'us-west2-b', 'us-west2-c'],
+    'us-west3': ['us-west3-a', 'us-west3-b', 'us-west3-c'],
+    'us-west4': ['us-west4-a', 'us-west4-b', 'us-west4-c'],
+    'asia-south1': ['asia-south1-a', 'asia-south1-b', 'asia-south1-c'],
+    'asia-south2': ['asia-south2-a', 'asia-south2-b', 'asia-south2-c'],
+    'asia-east1': ['asia-east1-a', 'asia-east1-b', 'asia-east1-c'],
+    'asia-east2': ['asia-east2-a', 'asia-east2-b', 'asia-east2-c'],
+    'asia-northeast1': ['asia-northeast1-a', 'asia-northeast1-b', 'asia-northeast1-c'],
+    'asia-northeast2': ['asia-northeast2-a', 'asia-northeast2-b', 'asia-northeast2-c'],
+    'asia-northeast3': ['asia-northeast3-a', 'asia-northeast3-b', 'asia-northeast3-c'],
+    'asia-southeast1': ['asia-southeast1-a', 'asia-southeast1-b', 'asia-southeast1-c'],
+    'australia-southeast1': ['australia-southeast1-a', 'australia-southeast1-b', 'australia-southeast1-c'],
+    'australia-southeast2': ['australia-southeast2-a', 'australia-southeast2-b', 'australia-southeast2-c'],
+    'europe-central2': ['europe-central2-a', 'europe-central2-b', 'europe-central2-c'],
+    'europe-north2': ['europe-north2-a', 'europe-north2-b', 'europe-north2-c'],
+    'europe-southwest1': ['europe-southwest1-a', 'europe-southwest1-b', 'europe-southwest1-c'],
+    'europe-west1': ['europe-west1-b', 'europe-west1-c', 'europe-west1-d'],
+    'europe-west2': ['europe-west2-a', 'europe-west2-b', 'europe-west2-c'],
+    'europe-west3': ['europe-west3-a', 'europe-west3-b', 'europe-west3-c'],
+    'europe-west4': ['europe-west4-a', 'europe-west4-b', 'europe-west4-c'],
+    'europe-west6': ['europe-west6-a', 'europe-west6-b', 'europe-west6-c'],
+    'europe-west8': ['europe-west8-a', 'europe-west8-b', 'europe-west8-c'],
+    'europe-west9': ['europe-west9-a', 'europe-west9-b', 'europe-west9-c'],
+    'northamerica-northeast1': ['northamerica-northeast1-a', 'northamerica-northeast1-b', 'northamerica-northeast1-c'],
+    'northamerica-northeast2': ['northamerica-northeast2-a', 'northamerica-northeast2-b', 'northamerica-northeast2-c'],
+    'southamerica-east1': ['southamerica-east1-a', 'southamerica-east1-b', 'southamerica-east1-c'],
+    'us-central1': ['us-central1-a', 'us-central1-b', 'us-central1-c', 'us-central1-f'],
+    'us-east1': ['us-east1-b', 'us-east1-c', 'us-east1-d'],
+    'us-east4': ['us-east4-a', 'us-east4-b', 'us-east4-c']
+  };
 
+  // Obsługa zmiany lokalizacji w modal
+  document.getElementById('modal_location').addEventListener('change', function(e) {
+    const zoneSelect = document.getElementById('modal_zone');
+    zoneSelect.innerHTML = '';
+    
+    if (!e.target.value || !zoneData[e.target.value]) {
+      zoneSelect.setAttribute('disabled', 'disabled');
+      zoneSelect.innerHTML = '<option value="" disabled selected>Najpierw wybierz lokalizację</option>';
+      return;
+    }
+
+    zoneData[e.target.value].forEach(zone => {
+      const option = document.createElement('option');
+      option.value = zone;
+      option.textContent = zone;
+      zoneSelect.appendChild(option);
+    });
+    
+    zoneSelect.removeAttribute('disabled');
+  });
+
+  // Reset formularza przy zamknięciu modala
+  document.getElementById('createProjectModal').addEventListener('hidden.bs.modal', function () {
+    this.querySelector('form').reset();
+    document.getElementById('modal_zone').innerHTML = '<option value="" disabled selected>Najpierw wybierz lokalizację</option>';
+    document.getElementById('modal_zone').setAttribute('disabled', 'disabled');
+  });
+
+  // Walidacja Bootstrap
+  (function () {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  })();
+</script>
 
 </body>
 </html>
