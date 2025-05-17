@@ -468,3 +468,13 @@ body.dark-theme .table thead {
 .collapsing {
   transition: height 0.15s ease !important;
 }
+
+body.dark-theme .table,
+body.dark-theme .table td,
+body.dark-theme .table th {
+  color: #ffffff !important;
+}
+
+body.dark-theme .table-hover tbody tr:hover {
+  color: #ffffff !important;
+}
