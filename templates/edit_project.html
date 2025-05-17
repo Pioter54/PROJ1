@@ -46,10 +46,42 @@
           </div>
           <div class="mb-3">
             <label for="location" class="form-label">Lokalizacja</label>
-            <input type="text" class="form-control" id="location" name="location"
-                   value="{{ project.location }}" required>
+            <select class="form-select" id="location" name="location" required>
+              <option value="" disabled selected>Wybierz lokalizację</option>
+              <option value="us-west-1" {% if project.location == "us-west-1" %}selected{% endif %}>us-west-1</option>
+              <option value="us-west1" {% if project.location == "us-west1" %}selected{% endif %}>us-west1</option>
+              <option value="us-west2" {% if project.location == "us-west2" %}selected{% endif %}>us-west2</option>
+              <option value="us-west3" {% if project.location == "us-west3" %}selected{% endif %}>us-west3</option>
+              <option value="asia-south1" {% if project.location == "asia-south1" %}selected{% endif %}>asia-south1</option>
+              <option value="asia-south2" {% if project.location == "asia-south2" %}selected{% endif %}>asia-south2</option>
+              <option value="asia-east1" {% if project.location == "asia-east1" %}selected{% endif %}>asia-east1</option>
+              <option value="asia-east2" {% if project.location == "asia-east2" %}selected{% endif %}>asia-east2</option>
+              <option value="asia-northeast1" {% if project.location == "asia-northeast1" %}selected{% endif %}>asia-northeast1</option>
+              <option value="asia-northeast2" {% if project.location == "asia-northeast2" %}selected{% endif %}>asia-northeast2</option>
+              <option value="asia-northeast3" {% if project.location == "asia-northeast3" %}selected{% endif %}>asia-northeast3</option>
+              <option value="asia-southeast1" {% if project.location == "asia-southeast1" %}selected{% endif %}>asia-southeast1</option>
+              <option value="australia-southeast1" {% if project.location == "australia-southeast1" %}selected{% endif %}>australia-southeast1</option>
+              <option value="australia-southeast2" {% if project.location == "australia-southeast2" %}selected{% endif %}>australia-southeast2</option>
+              <option value="europe-central2" {% if project.location == "europe-central2" %}selected{% endif %}>europe-central2</option>
+              <option value="europe-north2" {% if project.location == "europe-north2" %}selected{% endif %}>europe-north2</option>
+              <option value="europe-southwest1" {% if project.location == "europe-southwest1" %}selected{% endif %}>europe-southwest1</option>
+              <option value="europe-west1" {% if project.location == "europe-west1" %}selected{% endif %}>europe-west1</option>
+              <option value="europe-west2" {% if project.location == "europe-west2" %}selected{% endif %}>europe-west2</option>
+              <option value="europe-west3" {% if project.location == "europe-west3" %}selected{% endif %}>europe-west3</option>
+              <option value="europe-west4" {% if project.location == "europe-west4" %}selected{% endif %}>europe-west4</option>
+              <option value="europe-west6" {% if project.location == "europe-west6" %}selected{% endif %}>europe-west6</option>
+              <option value="europe-west8" {% if project.location == "europe-west8" %}selected{% endif %}>europe-west8</option>
+              <option value="europe-west9" {% if project.location == "europe-west9" %}selected{% endif %}>europe-west9</option>
+              <option value="northamerica-northeast1" {% if project.location == "northamerica-northeast1" %}selected{% endif %}>northamerica-northeast1</option>
+              <option value="northamerica-northeast2" {% if project.location == "northamerica-northeast2" %}selected{% endif %}>northamerica-northeast2</option>
+              <option value="southamerica-east1" {% if project.location == "southamerica-east1" %}selected{% endif %}>southamerica-east1</option>
+              <option value="us-central1" {% if project.location == "us-central1" %}selected{% endif %}>us-central1</option>
+              <option value="us-east1" {% if project.location == "us-east1" %}selected{% endif %}>us-east1</option>
+              <option value="us-east4" {% if project.location == "us-east4" %}selected{% endif %}>us-east4</option>
+              <option value="us-west4" {% if project.location == "us-west4" %}selected{% endif %}>us-west4</option>
+            </select>
             <div class="invalid-feedback">
-              Podaj lokalizację.
+              Wybierz lokalizację z listy.
             </div>
           </div>
           <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
