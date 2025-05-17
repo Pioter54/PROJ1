@@ -21,6 +21,7 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     location = db.Column(db.String(250), default="")
+    zone = db.Column(db.String(250), default="")
     active = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
@@ -85,7 +86,8 @@ def chat_endpoint():
     user_input  = request.json.get('message', '')
     project_name = session.get('project_name', '')
     location     = session.get('location', '')
-    prompt = f"{user_input} moje szczegóły: project:{project_name}, location:{location}"
+    zone         = session.get('zone', '')
+    prompt = f"{user_input} moje szczegóły: project:{project_name}, location:{location}, zone:{zone}"
     result = chat_with_terraform(prompt)
     return jsonify(result)
 
@@ -118,16 +120,19 @@ def profile():
         new_password = request.form['password']
         new_project  = request.form['project_name']
         new_location = request.form['location']
+        new_zone    = request.form['zone']
         if User.query.filter(User.username == new_username, User.id != user.id).first():
             return render_template('profile.html', user=user, error='Nazwa użytkownika jest już zajęta')
         user.username     = new_username
         project.name = new_project
         project.location = new_location
+        project.zone = new_zone
         if new_password:
             user.password = generate_password_hash(new_password)
         db.session.commit()
         session['project_name'] = new_project
         session['location']     = new_location
+        session['zone']         = new_zone
         return redirect(url_for('profile', success='Dane zostały zaktualizowane'))
     return render_template('profile.html', user=user)
 
@@ -136,10 +141,12 @@ def profile():
 def create_project():
     name = request.form.get("project_name")
     location = request.form.get("location")
+    zone = request.form.get("zone")
     if name and location:
         new_project = Project(
             name=name,
             location=location,
+            zone=zone,
             user_id=session['user_id']
         )
         db.session.add(new_project)
@@ -159,10 +166,12 @@ def toggle_project(project_id):
 
     session['project_name'] = project.name
     session['location'] = project.location
+    session['zone'] = project.zone
 
     print("Ustawiam sesję:")
     print("project_name =", project.name)
     print("location =", project.location)
+    print("zone =", project.zone)
 
 
     return jsonify({"status": "ok", "active": True})
@@ -179,9 +188,11 @@ def edit_project():
     if request.method == 'POST':
         project.name = request.form['project_name']
         project.location = request.form['location']
+        project.zone = request.form['zone']
         db.session.commit()
         session['project_name'] = project.name
         session['location'] = project.location
+        session['zone'] = project.zone
         return redirect(url_for('index'))
     
     return render_template('edit_project.html', project=project)
