@@ -1,12 +1,7 @@
+// ---- MOTYW CIEMNY/JASNY ----
 const themeButton = document.getElementById('theme-button');
 const body = document.body;
-const chatBox = document.getElementById('chat-box');
-const userInput = document.getElementById('user-input');
-const sendButton = document.getElementById('send-button');
-const terraformModalEl = document.getElementById('terraformModal');
-const generateButton = document.getElementById('generate-tf');
 
-// Motyw
 function applyTheme() {
   if (localStorage.getItem('theme') === 'dark') {
     body.classList.add('dark-theme');
@@ -17,29 +12,30 @@ function applyTheme() {
   }
 }
 applyTheme();
-themeButton.addEventListener('click', () => {
+themeButton?.addEventListener('click', () => {
   body.classList.toggle('dark-theme');
-  if (body.classList.contains('dark-theme')) {
-    localStorage.setItem('theme', 'dark');
-    themeButton.textContent = '☀️';
-  } else {
-    localStorage.setItem('theme', 'light');
-    themeButton.textContent = '🌙';
-  }
+  const newTheme = body.classList.contains('dark-theme') ? 'dark' : 'light';
+  localStorage.setItem('theme', newTheme);
+  themeButton.textContent = newTheme === 'dark' ? '☀️' : '🌙';
 });
 
-// Doklejanie wiadomości do czatu
+// ---- CZAT I TERRAFORM ----
+const chatBox = document.getElementById('chat-box');
+const userInput = document.getElementById('user-input');
+const sendButton = document.getElementById('send-button');
+const terraformModalEl = document.getElementById('terraformModal');
+const generateButton = document.getElementById('generate-tf');
+
 function appendMessage(content, sender) {
   const wrapper = document.createElement('div');
   wrapper.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
   wrapper.textContent = content;
-  chatBox.appendChild(wrapper);
+  chatBox?.appendChild(wrapper);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Wysłanie wiadomości i obsługa odpowiedzi
 function sendMessage() {
-  const message = userInput.value.trim();
+  const message = userInput?.value.trim();
   if (!message) return;
   appendMessage(message, 'user');
   userInput.value = '';
@@ -51,7 +47,6 @@ function sendMessage() {
   })
     .then(r => r.json())
     .then(data => {
-      console.log("Odpowiedź z /chat:", data);
       if (data.response) {
         appendMessage(data.response, 'bot');
         return;
@@ -68,13 +63,9 @@ function sendMessage() {
     });
 }
 
-// Generowanie dynamicznego formularza
 function generateDynamicForm(type, params) {
   const form = document.getElementById('terraform-form');
-  if (!form) {
-    console.error("Brakuje formularza #terraform-form w HTML.");
-    return;
-  }
+  if (!form) return;
 
   form.innerHTML = '';
   form.dataset.type = type;
@@ -90,8 +81,7 @@ function generateDynamicForm(type, params) {
   }
 }
 
-// Obsługa przycisku generowania Terraform
-generateButton.addEventListener('click', () => {
+generateButton?.addEventListener('click', () => {
   const form = document.getElementById('terraform-form');
   const formData = {};
   const type = form.dataset.type;
@@ -116,44 +106,30 @@ generateButton.addEventListener('click', () => {
     });
 });
 
-// Hooki na przycisk i Enter
-sendButton.addEventListener('click', sendMessage);
-userInput.addEventListener('keydown', e => {
+sendButton?.addEventListener('click', sendMessage);
+userInput?.addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMessage();
 });
 
-function toggleProjectActive(projectId) {
-    fetch(`/toggle_project/${projectId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ toggle: true })
-    }).then(response => {
-        if (!response.ok) {
-            alert('Nie udało się zmienić statusu projektu.');
-        }
-    });
-}
-
+// ---- AKTYWACJA PROJEKTU ----
 function toggleProjectActive(projectId) {
   fetch(`/toggle_project/${projectId}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  }).then(response => {
-    if (!response.ok) {
-      alert('Nie udało się zmienić statusu projektu.');
-      return;
-    }
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ toggle: true })
+  })
+    .then(response => {
+      if (!response.ok) {
+        alert('Nie udało się zmienić statusu projektu.');
+        return;
+      }
 
-    // Odśwież przełączniki po stronie klienta
-    document.querySelectorAll('.project-switch').forEach(sw => {
-      const currentId = parseInt(sw.getAttribute('onchange').match(/\d+/)[0]);
-      sw.checked = (currentId === projectId);
+      document.querySelectorAll('.project-switch').forEach(sw => {
+        const currentId = parseInt(sw.getAttribute('onchange')?.match(/\d+/)[0]);
+        sw.checked = (currentId === projectId);
+      });
+    })
+    .catch(err => {
+      console.error("Błąd połączenia z toggle_project:", err);
     });
-  }).catch(err => {
-    console.error("Błąd połączenia z toggle_project:", err);
-  });
 }

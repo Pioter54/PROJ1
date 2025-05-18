@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from main import chat_with_terraform
+from flask import flash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -24,6 +25,7 @@ class Project(db.Model):
     zone = db.Column(db.String(250), default="")
     active = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    machine_type = db.Column(db.String(250), default="")
 
     user = db.relationship('User', backref=db.backref('projects', lazy=True))
 
@@ -42,7 +44,12 @@ def login_required(f):
 @app.route('/')
 @login_required
 def index():
-    return render_template('chat.html')
+    user    = User.query.get(session['user_id'])
+    project = Project.query.filter_by(user_id=user.id, active=True).first()
+    if not project:
+        return redirect(url_for('profile'))
+    return render_template('chat.html', project=project)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -87,7 +94,8 @@ def chat_endpoint():
     project_name = session.get('project_name', '')
     location     = session.get('location', '')
     zone         = session.get('zone', '')
-    prompt = f"{user_input} moje szczegóły: project:{project_name}, location:{location}, zone:{zone}"
+    machine_type = session.get('machine_type', '')
+    prompt = f"{user_input} moje szczegóły: project:{project_name}, location:{location}, zone:{zone,}, machine_type:{machine_type}"
     result = chat_with_terraform(prompt)
     return jsonify(result)
 
@@ -121,18 +129,21 @@ def profile():
         new_project  = request.form['project_name']
         new_location = request.form['location']
         new_zone    = request.form['zone']
+        new_machine_type = request.form['machine_type']
         if User.query.filter(User.username == new_username, User.id != user.id).first():
             return render_template('profile.html', user=user, error='Nazwa użytkownika jest już zajęta')
         user.username     = new_username
         project.name = new_project
         project.location = new_location
         project.zone = new_zone
+        project.machine_type = new_machine_type
         if new_password:
             user.password = generate_password_hash(new_password)
         db.session.commit()
         session['project_name'] = new_project
         session['location']     = new_location
         session['zone']         = new_zone
+        session['machine_type'] = new_machine_type
         return redirect(url_for('profile', success='Dane zostały zaktualizowane'))
     return render_template('profile.html', user=user)
 
@@ -142,11 +153,13 @@ def create_project():
     name = request.form.get("project_name")
     location = request.form.get("location")
     zone = request.form.get("zone")
+    machine_type = request.form.get("machine_type")
     if name and location:
         new_project = Project(
             name=name,
             location=location,
             zone=zone,
+            machine_type=machine_type,
             user_id=session['user_id']
         )
         db.session.add(new_project)
@@ -167,35 +180,57 @@ def toggle_project(project_id):
     session['project_name'] = project.name
     session['location'] = project.location
     session['zone'] = project.zone
+    session['machine_type'] = project.machine_type
 
     print("Ustawiam sesję:")
     print("project_name =", project.name)
     print("location =", project.location)
     print("zone =", project.zone)
+    print("machine_type =", project.machine_type)
 
 
     return jsonify({"status": "ok", "active": True})
 
-@app.route('/edit_project', methods=['GET', 'POST'])
+@app.route('/edit_project/<int:project_id>', methods=['GET', 'POST'])
 @login_required
-def edit_project():
+def edit_project(project_id):
     user = User.query.get(session['user_id'])
-    project = Project.query.filter_by(user_id=user.id, active=True).first()
-    
-    if not project:
-        return redirect(url_for('profile'))
-    
+    project = Project.query.filter_by(id=project_id, user_id=user.id).first_or_404()
+
     if request.method == 'POST':
-        project.name = request.form['project_name']
-        project.location = request.form['location']
-        project.zone = request.form['zone']
+        project.name          = request.form['project_name']
+        project.location      = request.form['location']
+        project.zone          = request.form['zone']
+        project.machine_type  = request.form['machine_type']
         db.session.commit()
-        session['project_name'] = project.name
-        session['location'] = project.location
-        session['zone'] = project.zone
-        return redirect(url_for('index'))
-    
+
+        if project.active:
+            session['project_name'] = project.name
+            session['location']     = project.location
+            session['zone']         = project.zone
+            session['machine_type'] = project.machine_type
+
+        return redirect(url_for('profile'))
+
     return render_template('edit_project.html', project=project)
+
+
+@app.route('/delete_project/<int:project_id>', methods=['POST'])
+@login_required
+def delete_project(project_id):
+    project = Project.query.filter_by(id=project_id, user_id=session['user_id']).first_or_404()
+    
+    db.session.delete(project)
+    db.session.commit()
+
+    if session.get('project_name') == project.name:
+        session.pop('project_name', None)
+        session.pop('location', None)
+        session.pop('zone', None)
+        session.pop('machine_type', None)
+
+    flash(f"Projekt \"{project.name}\" został usunięty.")
+    return redirect(url_for('profile'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
