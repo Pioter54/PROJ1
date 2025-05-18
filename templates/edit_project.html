@@ -108,45 +108,32 @@
             <div class="d-flex gap-2">
               {# rodzina #}
               {% set family = (project.machine_type or '').split('-')[0] %}
-              <select class="form-select" id="machine_family" name="machine_family" required>
-                <option value="" disabled {% if family is not defined or family == '' %}selected{% endif %}>Rodzina</option>
-                <option value="e2"   {% if family == 'e2'   %}selected{% endif %}>e2</option>
-                <option value="n2"   {% if family == 'n2'   %}selected{% endif %}>n2</option>
-                <option value="n2d"  {% if family == 'n2d'  %}selected{% endif %}>n2d</option>
-                <option value="c2"   {% if family == 'c2'   %}selected{% endif %}>c2</option>
-                <option value="c2d"  {% if family == 'c2d'  %}selected{% endif %}>c2d</option>
-                <option value="c3"   {% if family == 'c3'   %}selected{% endif %}>c3</option>
-                <option value="m1"   {% if family == 'm1'   %}selected{% endif %}>m1</option>
-                <option value="m2"   {% if family == 'm2'   %}selected{% endif %}>m2</option>
-                <option value="a2"   {% if family == 'a2'   %}selected{% endif %}>a2</option>
-                <option value="custom" {% if family == 'custom' %}selected{% endif %}>custom</option>
+              <select class="form-select" id="machine_family" name="machine_family" required {% if not project.location %}disabled{% endif %}>
+                {% if project.machine_type %}
+                  <option value="{{ family }}" selected>{{ family }}</option>
+                {% else %}
+                  <option value="" disabled selected>Wybierz najpierw lokalizację</option>
+                {% endif %}
               </select>
 
               {# podtyp #}
               {% set subtype = (project.machine_type or '').split('-')[1] %}
-              <select class="form-select" id="machine_family_type" name="machine_family_type" required>
-                <option value="" disabled {% if subtype is not defined or subtype == '' %}selected{% endif %}>Typ</option>
-                <option value="standard" {% if subtype == 'standard' %}selected{% endif %}>standard</option>
-                <option value="highmem"  {% if subtype == 'highmem'  %}selected{% endif %}>highmem</option>
-                <option value="highcpu"  {% if subtype == 'highcpu'  %}selected{% endif %}>highcpu</option>
-                <option value="ultramem" {% if subtype == 'ultramem' %}selected{% endif %}>ultramem</option>
-                <option value="micro"    {% if subtype == 'micro'    %}selected{% endif %}>micro</option>
-                <option value="small"    {% if subtype == 'small'    %}selected{% endif %}>small</option>
-                <option value="medium"   {% if subtype == 'medium'   %}selected{% endif %}>medium</option>
+              <select class="form-select" id="machine_family_type" name="machine_family_type" required {% if not family %}disabled{% endif %}>
+                {% if project.machine_type %}
+                  <option value="{{ subtype }}" selected>{{ subtype }}</option>
+                {% else %}
+                  <option value="" disabled selected>Wybierz najpierw rodzinę</option>
+                {% endif %}
               </select>
 
               {# vCPU #}
               {% set vcpu = (project.machine_type or '').split('-')[2] %}
-              <select class="form-select" id="machine_vcpu" name="machine_vcpu" required>
-                <option value="" disabled {% if vcpu is not defined or vcpu == '' %}selected{% endif %}>vCPU</option>
-                <option value="2"   {% if vcpu == '2'   %}selected{% endif %}>2</option>
-                <option value="4"   {% if vcpu == '4'   %}selected{% endif %}>4</option>
-                <option value="8"   {% if vcpu == '8'   %}selected{% endif %}>8</option>
-                <option value="16"  {% if vcpu == '16'  %}selected{% endif %}>16</option>
-                <option value="32"  {% if vcpu == '32'  %}selected{% endif %}>32</option>
-                <option value="64"  {% if vcpu == '64'  %}selected{% endif %}>64</option>
-                <option value="96"  {% if vcpu == '96'  %}selected{% endif %}>96</option>
-                <option value="128" {% if vcpu == '128' %}selected{% endif %}>128</option>
+              <select class="form-select" id="machine_vcpu" name="machine_vcpu" required {% if not subtype %}disabled{% endif %}>
+                {% if project.machine_type %}
+                  <option value="{{ vcpu }}" selected>{{ vcpu }}</option>
+                {% else %}
+                  <option value="" disabled selected>Wybierz najpierw typ</option>
+                {% endif %}
               </select>
             </div>
 
@@ -200,21 +187,104 @@
       'us-east4': ['us-east4-a', 'us-east4-b', 'us-east4-c']
     };
 
-    // Initialize zones on page load
+    // Machine family configuration
+    const machineFamilyData = {
+      'us-west1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'A2'],
+      'us-west2': ['E2', 'N2', 'N2D', 'N1', 'M1', 'C2'],
+      'us-west3': ['E2', 'N1', 'N2', 'C2'],
+      'us-west4': ['E2', 'N2', 'N2D', 'N1', 'C2', 'T2D', 'M1', 'M2'],
+      'asia-south1': ['E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2'],
+      'asia-south2': ['E2', 'N1', 'N2', 'M1', 'M2', 'C2'],
+      'asia-east1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'C2D'],
+      'asia-east2': ['E2', 'N2', 'N2D', 'N1', 'C2'],
+      'asia-northeast1': ['E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2', 'A2'],
+      'asia-northeast2': ['E2', 'N1', 'N2', 'N2D', 'M1', 'M2', 'C2'],
+      'asia-northeast3': ['E2', 'N2', 'N1', 'M1', 'C2'],
+      'asia-southeast1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'C2D', 'A2'],
+      'australia-southeast1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'C2', 'M1', 'M2'],
+      'australia-southeast2': ['E2', 'N1', 'N2', 'M1'],
+      'europe-central2': ['E2', 'N1', 'N2'],
+      'europe-north2': ['E2', 'N2', 'N2D', 'N1', 'C2'],
+      'europe-southwest1': ['E2', 'N2'],
+      'europe-west1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
+      'europe-west2': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
+      'europe-west3': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
+      'europe-west4': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D', 'A2'],
+      'europe-west6': ['E2', 'N2', 'N1', 'M1', 'C2'],
+      'europe-west8': ['E2', 'N2', 'N2D'],
+      'europe-west9': ['E2', 'N2'],
+      'northamerica-northeast1': ['E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2'],
+      'northamerica-northeast2': ['E2', 'N2', 'N1', 'M1'],
+      'southamerica-east1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2'],
+      'us-central1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D', 'A2'],
+      'us-east1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D'],
+      'us-east4': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D']
+    };
+
+    // Machine family types configuration
+    const machineFamilyTypes = {
+      'E2': ['standard', 'highmem', 'highcpu', 'micro', 'small', 'medium'],
+      'N2': ['standard', 'highmem', 'highcpu'],
+      'N2D': ['standard', 'highmem', 'highcpu'],
+      'T2D': ['standard'],
+      'N1': ['standard', 'highmem', 'highcpu', 'ultramem'],
+      'M1': ['ultramem', 'megamem'],
+      'M2': ['ultramem', 'megamem'],
+      'C2': ['standard'],
+      'C2D': ['standard'],
+      'A2': ['highgpu']
+    };
+
+    // Machine vCPU options
+    const machineVcpuOptions = {
+      'standard': ['2', '4', '8', '16', '32', '64', '96', '128'],
+      'highmem': ['2', '4', '8', '16', '32', '64', '96', '128'],
+      'highcpu': ['2', '4', '8', '16', '32', '64', '96'],
+      'ultramem': ['40', '80', '160'],
+      'micro': ['0.25', '0.5', '1'],
+      'small': ['1', '2'],
+      'medium': ['1', '2', '4'],
+      'highgpu': ['1', '2', '4', '8', '16', '24', '48', '96']
+    };
+
+    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
       const locationSelect = document.getElementById('location');
       const zoneSelect = document.getElementById('zone');
+      const machineFamilySelect = document.getElementById('machine_family');
       const initialLocation = '{{ project.location }}';
       const initialZone = '{{ project.zone }}';
+      const initialMachineType = '{{ project.machine_type }}';
 
-      if (initialLocation && zoneData[initialLocation]) {
-        updateZones(initialLocation, initialZone);
+      if (initialLocation) {
+        if (zoneData[initialLocation]) {
+          updateZones(initialLocation, initialZone);
+        }
+        if (machineFamilyData[initialLocation]) {
+          updateMachineFamilies(initialLocation, initialMachineType);
+        }
       }
     });
 
     // Location change handler
     document.getElementById('location').addEventListener('change', function(e) {
       updateZones(e.target.value);
+      updateMachineFamilies(e.target.value);
+    });
+
+    // Machine family change handler
+    document.getElementById('machine_family').addEventListener('change', function(e) {
+      updateMachineFamilyTypes(e.target.value);
+    });
+
+    // Machine family type change handler
+    document.getElementById('machine_family_type').addEventListener('change', function(e) {
+      updateMachineVcpuOptions(e.target.value);
+    });
+
+    // Update machine type hidden field when any part changes
+    document.querySelectorAll('#machine_family, #machine_family_type, #machine_vcpu').forEach(select => {
+      select.addEventListener('change', updateMachineType);
     });
 
     function updateZones(location, preselectedZone = null) {
@@ -236,6 +306,115 @@
       });
       
       zoneSelect.removeAttribute('disabled');
+    }
+
+    function updateMachineFamilies(location, preselectedMachineType = null) {
+      const machineFamilySelect = document.getElementById('machine_family');
+      const machineFamilyTypeSelect = document.getElementById('machine_family_type');
+      const machineVcpuSelect = document.getElementById('machine_vcpu');
+      
+      machineFamilySelect.innerHTML = '';
+      machineFamilyTypeSelect.innerHTML = '<option value="" disabled selected>Wybierz najpierw rodzinę</option>';
+      machineFamilyTypeSelect.setAttribute('disabled', 'disabled');
+      machineVcpuSelect.innerHTML = '<option value="" disabled selected>Wybierz najpierw typ</option>';
+      machineVcpuSelect.setAttribute('disabled', 'disabled');
+      
+      if (!location || !machineFamilyData[location]) {
+        machineFamilySelect.setAttribute('disabled', 'disabled');
+        machineFamilySelect.innerHTML = '<option value="" disabled selected>Wybierz najpierw lokalizację</option>';
+        return;
+      }
+
+      let selectedFamily = '';
+      if (preselectedMachineType) {
+        selectedFamily = preselectedMachineType.split('-')[0];
+      }
+
+      machineFamilyData[location].forEach(family => {
+        const option = document.createElement('option');
+        option.value = family.toLowerCase();
+        option.textContent = family;
+        if (family.toLowerCase() === selectedFamily) option.selected = true;
+        machineFamilySelect.appendChild(option);
+      });
+      
+      machineFamilySelect.removeAttribute('disabled');
+      
+      if (selectedFamily) {
+        updateMachineFamilyTypes(selectedFamily, preselectedMachineType);
+      }
+    }
+
+    function updateMachineFamilyTypes(family, preselectedMachineType = null) {
+      const machineFamilyTypeSelect = document.getElementById('machine_family_type');
+      const machineVcpuSelect = document.getElementById('machine_vcpu');
+      
+      machineFamilyTypeSelect.innerHTML = '';
+      machineVcpuSelect.innerHTML = '<option value="" disabled selected>Wybierz najpierw typ</option>';
+      machineVcpuSelect.setAttribute('disabled', 'disabled');
+      
+      if (!family || !machineFamilyTypes[family.toUpperCase()]) {
+        machineFamilyTypeSelect.setAttribute('disabled', 'disabled');
+        machineFamilyTypeSelect.innerHTML = '<option value="" disabled selected>Wybierz najpierw rodzinę</option>';
+        return;
+      }
+
+      let selectedType = '';
+      if (preselectedMachineType) {
+        selectedType = preselectedMachineType.split('-')[1];
+      }
+
+      machineFamilyTypes[family.toUpperCase()].forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        if (type === selectedType) option.selected = true;
+        machineFamilyTypeSelect.appendChild(option);
+      });
+      
+      machineFamilyTypeSelect.removeAttribute('disabled');
+      
+      if (selectedType) {
+        updateMachineVcpuOptions(selectedType, preselectedMachineType);
+      }
+    }
+
+    function updateMachineVcpuOptions(type, preselectedMachineType = null) {
+      const machineVcpuSelect = document.getElementById('machine_vcpu');
+      
+      machineVcpuSelect.innerHTML = '';
+      
+      if (!type || !machineVcpuOptions[type]) {
+        machineVcpuSelect.setAttribute('disabled', 'disabled');
+        machineVcpuSelect.innerHTML = '<option value="" disabled selected>Wybierz najpierw typ</option>';
+        return;
+      }
+
+      let selectedVcpu = '';
+      if (preselectedMachineType) {
+        selectedVcpu = preselectedMachineType.split('-')[2];
+      }
+
+      machineVcpuOptions[type].forEach(vcpu => {
+        const option = document.createElement('option');
+        option.value = vcpu;
+        option.textContent = vcpu;
+        if (vcpu === selectedVcpu) option.selected = true;
+        machineVcpuSelect.appendChild(option);
+      });
+      
+      machineVcpuSelect.removeAttribute('disabled');
+      updateMachineType();
+    }
+
+    function updateMachineType() {
+      const family = document.getElementById('machine_family').value;
+      const type = document.getElementById('machine_family_type').value;
+      const vcpu = document.getElementById('machine_vcpu').value;
+      
+      if (family && type && vcpu) {
+        document.getElementById('machine_type').value = `${family}-${type}-${vcpu}`;
+      }
     }
 
     // Bootstrap validation
