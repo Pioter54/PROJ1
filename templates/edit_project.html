@@ -241,9 +241,9 @@
       'highmem': ['2', '4', '8', '16', '32', '64', '96', '128'],
       'highcpu': ['2', '4', '8', '16', '32', '64', '96'],
       'ultramem': ['40', '80', '208', '416'],
-      'micro': ['0.25', '0.5', '1'],
-      'small': ['1', '2'],
-      'medium': ['1', '2', '4'],
+      'micro': [''],
+      'small': [''],
+      'medium': [''],
       'highgpu': ['12', '24', '48', '96'],
       'custom': ['2', '4', '8', '16', '32', '64', '96', '128']
     };
@@ -383,12 +383,24 @@
 
     function updateMachineVcpuOptions(type, preselectedMachineType = null) {
       const machineVcpuSelect = document.getElementById('machine_vcpu');
-      
       machineVcpuSelect.innerHTML = '';
-      
+
+      // Sprawdź, czy typ to micro, small, medium
+      const disabledTypes = ['micro', 'small', 'medium'];
       if (!type || !machineVcpuOptions[type]) {
         machineVcpuSelect.setAttribute('disabled', 'disabled');
         machineVcpuSelect.innerHTML = '<option value="" disabled selected>Wybierz najpierw typ</option>';
+        return;
+      }
+
+      if (disabledTypes.includes(type)) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Brak dostępnych opcji';
+        option.selected = true;
+        machineVcpuSelect.appendChild(option);
+        machineVcpuSelect.setAttribute('disabled', 'disabled');
+        document.getElementById('machine_type').value = `${document.getElementById('machine_family').value}-${type}`;
         return;
       }
 
@@ -404,10 +416,11 @@
         if (vcpu === selectedVcpu) option.selected = true;
         machineVcpuSelect.appendChild(option);
       });
-      
+
       machineVcpuSelect.removeAttribute('disabled');
       updateMachineType();
     }
+
 
     function updateMachineType() {
       const family = document.getElementById('machine_family').value;
