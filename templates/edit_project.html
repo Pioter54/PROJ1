@@ -40,7 +40,7 @@
           <div class="mb-3">
             <label for="project_name" class="form-label">Nazwa projektu</label>
             <input type="text" class="form-control" id="project_name" name="project_name"
-                   value="{{ project.name }}" required>
+                   value="{{ project.name }}">
             <div class="invalid-feedback">
               Podaj nazwę projektu.
             </div>
@@ -49,7 +49,7 @@
           <!-- Location Dropdown -->
           <div class="mb-3">
             <label for="location" class="form-label">Lokalizacja</label>
-            <select class="form-select" id="location" name="location" required>
+            <select class="form-select" id="location" name="location" >
               <option value="" disabled selected>Wybierz lokalizację</option>
               <option value="us-west1" {% if project.location == "us-west1" %}selected{% endif %}>us-west1</option>
               <option value="us-west2" {% if project.location == "us-west2" %}selected{% endif %}>us-west2</option>
@@ -90,7 +90,7 @@
           <!-- Zone Dropdown -->
           <div class="mb-3">
             <label for="zone" class="form-label">Strefa</label>
-            <select class="form-select" id="zone" name="zone" required {% if not project.location %}disabled{% endif %}>
+            <select class="form-select" id="zone" name="zone" {% if not project.location %}disabled{% endif %}>
               {% if project.zone %}
                 <option value="{{ project.zone }}" selected>{{ project.zone }}</option>
               {% else %}
@@ -108,7 +108,7 @@
             <div class="d-flex gap-2">
               {# rodzina #}
               {% set family = (project.machine_type or '').split('-')[0] %}
-              <select class="form-select" id="machine_family" name="machine_family" required {% if not project.location %}disabled{% endif %}>
+              <select class="form-select" id="machine_family" name="machine_family" {% if not project.location %}disabled{% endif %}>
                 {% if project.machine_type %}
                   <option value="{{ family }}" selected>{{ family }}</option>
                 {% else %}
@@ -118,7 +118,7 @@
 
               {# podtyp #}
               {% set subtype = (project.machine_type or '').split('-')[1] %}
-              <select class="form-select" id="machine_family_type" name="machine_family_type" required {% if not family %}disabled{% endif %}>
+              <select class="form-select" id="machine_family_type" name="machine_family_type" {% if not family %}disabled{% endif %}>
                 {% if project.machine_type %}
                   <option value="{{ subtype }}" selected>{{ subtype }}</option>
                 {% else %}
@@ -128,7 +128,7 @@
 
               {# vCPU #}
               {% set vcpu = (project.machine_type or '').split('-')[2] %}
-              <select class="form-select" id="machine_vcpu" name="machine_vcpu" required {% if not subtype %}disabled{% endif %}>
+              <select class="form-select" id="machine_vcpu" name="machine_vcpu" {% if not subtype %}disabled{% endif %}>
                 {% if project.machine_type %}
                   <option value="{{ vcpu }}" selected>{{ vcpu }}</option>
                 {% else %}
@@ -138,7 +138,7 @@
             </div>
 
             {# ukryte pole z pełnym typem #}
-            <input type="hidden" id="machine_type" name="machine_type" value="{{ project.machine_type }}" required>
+            <input type="hidden" id="machine_type" name="machine_type" value="{{ project.machine_type }}">
             <div class="invalid-feedback">
               Wybierz pełny typ maszyny.
             </div>
@@ -189,36 +189,36 @@
 
     // Machine family configuration
     const machineFamilyData = {
-      'us-west1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'A2'],
-      'us-west2': ['E2', 'N2', 'N2D', 'N1', 'M1', 'C2'],
-      'us-west3': ['E2', 'N1', 'N2', 'C2'],
-      'us-west4': ['E2', 'N2', 'N2D', 'N1', 'C2', 'T2D', 'M1', 'M2'],
-      'asia-south1': ['E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2'],
-      'asia-south2': ['E2', 'N1', 'N2', 'M1', 'M2', 'C2'],
-      'asia-east1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'C2D'],
-      'asia-east2': ['E2', 'N2', 'N2D', 'N1', 'C2'],
-      'asia-northeast1': ['E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2', 'A2'],
-      'asia-northeast2': ['E2', 'N1', 'N2', 'N2D', 'M1', 'M2', 'C2'],
-      'asia-northeast3': ['E2', 'N2', 'N1', 'M1', 'C2'],
-      'asia-southeast1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'C2D', 'A2'],
-      'australia-southeast1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'C2', 'M1', 'M2'],
-      'australia-southeast2': ['E2', 'N1', 'N2', 'M1'],
-      'europe-central2': ['E2', 'N1', 'N2'],
-      'europe-north2': ['E2', 'N2', 'N2D', 'N1', 'C2'],
-      'europe-southwest1': ['E2', 'N2'],
-      'europe-west1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
-      'europe-west2': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
-      'europe-west3': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
-      'europe-west4': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D', 'A2'],
-      'europe-west6': ['E2', 'N2', 'N1', 'M1', 'C2'],
-      'europe-west8': ['E2', 'N2', 'N2D'],
-      'europe-west9': ['E2', 'N2'],
-      'northamerica-northeast1': ['E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2'],
-      'northamerica-northeast2': ['E2', 'N2', 'N1', 'M1'],
-      'southamerica-east1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2'],
-      'us-central1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D', 'A2'],
-      'us-east1': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D'],
-      'us-east4': ['E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D']
+      'us-west1': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'A2'],
+      'us-west2': ["",'E2', 'N2', 'N2D', 'N1', 'M1', 'C2'],
+      'us-west3': ["",'E2', 'N1', 'N2', 'C2'],
+      'us-west4': ["",'E2', 'N2', 'N2D', 'N1', 'C2', 'T2D', 'M1', 'M2'],
+      'asia-south1': ["",'E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2'],
+      'asia-south2': ["",'E2', 'N1', 'N2', 'M1', 'M2', 'C2'],
+      'asia-east1': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'C2D'],
+      'asia-east2': ["",'E2', 'N2', 'N2D', 'N1', 'C2'],
+      'asia-northeast1': ["",'E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2', 'A2'],
+      'asia-northeast2': ["",'E2', 'N1', 'N2', 'N2D', 'M1', 'M2', 'C2'],
+      'asia-northeast3': ["",'E2', 'N2', 'N1', 'M1', 'C2'],
+      'asia-southeast1': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2', 'C2D', 'A2'],
+      'australia-southeast1': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'C2', 'M1', 'M2'],
+      'australia-southeast2': ["",'E2', 'N1', 'N2', 'M1'],
+      'europe-central2': ["",'E2', 'N1', 'N2'],
+      'europe-north2': ["",'E2', 'N2', 'N2D', 'N1', 'C2'],
+      'europe-southwest1': ["",'E2', 'N2'],
+      'europe-west1': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
+      'europe-west2': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
+      'europe-west3': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2'],
+      'europe-west4': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D', 'A2'],
+      'europe-west6': ["",'E2', 'N2', 'N1', 'M1', 'C2'],
+      'europe-west8': ["",'E2', 'N2', 'N2D'],
+      'europe-west9': ["",'E2', 'N2'],
+      'northamerica-northeast1': ["",'E2', 'N2', 'N2D', 'N1', 'M1', 'M2', 'C2'],
+      'northamerica-northeast2': ["",'E2', 'N2', 'N1', 'M1'],
+      'southamerica-east1': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'C2'],
+      'us-central1': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D', 'A2'],
+      'us-east1': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D'],
+      'us-east4': ["",'E2', 'N2', 'N2D', 'T2D', 'N1', 'M1', 'M2', 'C2', 'C2D']
     };
 
     const machineFamilyTypes = {

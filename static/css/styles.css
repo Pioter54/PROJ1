@@ -300,6 +300,22 @@ a:hover {
     transition: background-color 0.2s;
 }
 
+.btn-secondary {
+    background-color: #e0e7ff;
+    color: #5c5c5c;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: #b6bdd3;
+    color: #101010;
+}
+
+
 .btn-primary:hover {
     text-decoration: none;
 }
@@ -391,6 +407,12 @@ body.dark-theme .profile-main {
 }
 
 .dark-theme .form-control {
+    background-color: #303030;
+    color: #e0e0e0;
+    border-color: #3a3a3a;
+}
+
+.dark-theme .form-select {
     background-color: #303030;
     color: #e0e0e0;
     border-color: #3a3a3a;

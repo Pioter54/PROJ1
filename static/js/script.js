@@ -63,6 +63,20 @@ function sendMessage() {
     });
 }
 
+function applyTerraformWithStream() {
+  const eventSource = new EventSource('/stream_apply_tf');
+
+  appendMessage("Rozpoczynam stosowanie kodu Terraform...", 'bot');
+
+  eventSource.onmessage = function(event) {
+    appendMessage(event.data, 'bot');
+  };
+
+  eventSource.onerror = function(err) {
+    eventSource.close();
+  };
+}
+
 function generateDynamicForm(type, params) {
   const form = document.getElementById('terraform-form');
   if (!form) return;
@@ -96,14 +110,10 @@ generateButton?.addEventListener('click', () => {
     body: JSON.stringify({ type, params: formData })
   })
     .then(r => r.json())
-    .then(data => {
-      appendMessage("Wygenerowano:\n" + data.result, 'bot');
-      bootstrap.Modal.getInstance(terraformModalEl).hide();
+    .then(() => {
+        applyTerraformWithStream();
+        bootstrap.Modal.getInstance(terraformModalEl).hide();
     })
-    .catch(err => {
-      console.error(err);
-      appendMessage("Błąd podczas generowania pliku Terraform.", 'bot');
-    });
 });
 
 sendButton?.addEventListener('click', sendMessage);

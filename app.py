@@ -3,8 +3,8 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-from main import chat_with_terraform
-from flask import flash
+from main import chat_with_terraform,stream_terraform  
+from flask import flash,Response 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -20,12 +20,13 @@ class User(db.Model):
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120), default="")
     location = db.Column(db.String(250), default="")
     zone = db.Column(db.String(250), default="")
     active = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     machine_type = db.Column(db.String(250), default="")
+    google_cloud_keyfile_json = db.Column(db.String(1000), default="")
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('projects', lazy=True))
 
@@ -46,8 +47,6 @@ def login_required(f):
 def index():
     user    = User.query.get(session['user_id'])
     project = Project.query.filter_by(user_id=user.id, active=True).first()
-    if not project:
-        return redirect(url_for('profile'))
     return render_template('chat.html', project=project)
 
 
@@ -117,6 +116,13 @@ def generate_tf():
 
     return jsonify({'result': tf_output})
 
+@app.route('/stream_apply_tf')
+@login_required
+def stream_apply_tf():
+    def generate():
+        yield from stream_terraform(directory='./temp')
+    return Response(generate(), mimetype='text/event-stream')
+
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -145,7 +151,7 @@ def profile():
         session['zone']         = new_zone
         session['machine_type'] = new_machine_type
         return redirect(url_for('profile', success='Dane zostały zaktualizowane'))
-    return render_template('profile.html', user=user)
+    return render_template('profile.html', user=user, project=project)
 
 @app.route("/create_project", methods=["POST"])
 @login_required
@@ -154,13 +160,15 @@ def create_project():
     location = request.form.get("location")
     zone = request.form.get("zone")
     machine_type = request.form.get("machine_type")
+    google_cloud_keyfile_json = request.form.get("google_cloud_keyfile_json", "")
     if name and location:
         new_project = Project(
             name=name,
             location=location,
             zone=zone,
             machine_type=machine_type,
-            user_id=session['user_id']
+            user_id=session['user_id'],
+            google_cloud_keyfile_json=google_cloud_keyfile_json
         )
         db.session.add(new_project)
         db.session.commit()
@@ -176,18 +184,20 @@ def toggle_project(project_id):
     project = Project.query.filter_by(id=project_id, user_id=user_id).first_or_404()
     project.active = True
     db.session.commit()
-
     session['project_name'] = project.name
     session['location'] = project.location
     session['zone'] = project.zone
     session['machine_type'] = project.machine_type
+    session["google_cloud_keyfile_json"] = project.google_cloud_keyfile_json
+    if project.google_cloud_keyfile_json:
+        os.environ["GOOGLE_CREDENTIALS"] = project.google_cloud_keyfile_json
 
     print("Ustawiam sesję:")
     print("project_name =", project.name)
     print("location =", project.location)
     print("zone =", project.zone)
     print("machine_type =", project.machine_type)
-
+    print("google_cloud_keyfile_json =", project.google_cloud_keyfile_json)
 
     return jsonify({"status": "ok", "active": True})
 
@@ -202,6 +212,7 @@ def edit_project(project_id):
         project.location      = request.form['location']
         project.zone          = request.form['zone']
         project.machine_type  = request.form['machine_type']
+        project.google_cloud_keyfile_json   = request.form.get('google_cloud_keyfile_json', '')
         db.session.commit()
 
         if project.active:
@@ -209,6 +220,8 @@ def edit_project(project_id):
             session['location']     = project.location
             session['zone']         = project.zone
             session['machine_type'] = project.machine_type
+            session['google_cloud_keyfile_json'] = project.google_cloud_keyfile_json
+
 
         return redirect(url_for('profile'))
 
