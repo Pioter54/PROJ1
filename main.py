@@ -5,7 +5,8 @@ import subprocess
 from pathlib import Path
 import json
 import re
-import jsonify
+from google.cloud import compute_v1, storage
+from google.oauth2 import service_account
 
 # Inicjalizacja klienta LangChain
 load_dotenv()
@@ -208,3 +209,30 @@ def stream_terraform(directory="."):
                 yield f"data: ⏳ Trwa tworzenie zasobu...\n\n"
             # else:
             #     yield f"data: {clean}\n\n"
+
+def fetch_gcp_resources(project_id: str, keyfile_json: str):
+    if not project_id or not keyfile_json:
+        return [], []
+
+    creds = service_account.Credentials.from_service_account_info(
+        json.loads(keyfile_json)
+    )
+
+    # VM-ki
+    vm_instances = []
+    inst_client = compute_v1.InstancesClient(credentials=creds)
+    for zone, resp in inst_client.aggregated_list(project=project_id):
+        for inst in getattr(resp, "instances", []):
+            vm_instances.append(
+                {"name": inst.name,
+                 "zone": zone.split("/")[-1],
+                 "status": inst.status}
+            )
+
+    # Bucket-y
+    bucket_names = [
+        b.name for b in storage.Client(credentials=creds,
+                                       project=project_id).list_buckets()
+    ]
+
+    return vm_instances, bucket_names

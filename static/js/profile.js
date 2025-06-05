@@ -219,29 +219,34 @@
     })
 });
 
-  //   const gcpContainer = document.getElementById('gcp-resources');
+document.addEventListener("DOMContentLoaded", () => {
+  const gcpContainer = document.getElementById('gcp-resources');
+  if (!gcpContainer) return;
 
-  // if (window.vmInstances && Array.isArray(window.vmInstances)) {
-  //   const vmBlock = document.createElement('div');
-  //   vmBlock.innerHTML = '<h4>Instancje VM</h4>' +
-  //     (window.vmInstances.length === 0
-  //       ? '<p class="text-muted">Brak uruchomionych maszyn.</p>'
-  //       : '<ul class="list-group mb-3">' +
-  //         window.vmInstances.map(vm => `<li class="list-group-item d-flex justify-content-between align-items-center">
-  //           <span><strong>${vm.name}</strong> (${vm.zone})</span>
-  //           <span class="badge bg-${vm.status === 'RUNNING' ? 'success' : 'secondary'}">${vm.status}</span>
-  //         </li>`).join('') +
-  //         '</ul>');
-  //   gcpContainer.appendChild(vmBlock);
-  // }
+  gcpContainer.innerHTML = ""; // usuwa "Ładowanie danych..."
 
-  // if (window.gcsBuckets && Array.isArray(window.gcsBuckets)) {
-  //   const bucketBlock = document.createElement('div');
-  //   bucketBlock.innerHTML = '<h4>Bucket'y Storage</h4>' +
-  //     (window.gcsBuckets.length === 0
-  //       ? '<p class="text-muted">Brak bucketów w projekcie.</p>'
-  //       : '<ul class="list-group">' +
-  //         window.gcsBuckets.map(name => `<li class="list-group-item">${name}</li>`).join('') +
-  //         '</ul>');
-  //   gcpContainer.appendChild(bucketBlock);
-  // }
+  if (window.vmInstances && Array.isArray(window.vmInstances)) {
+    const vmBlock = document.createElement('div');
+    vmBlock.innerHTML = '<h4>Instancje VM</h4>' +
+      (window.vmInstances.length === 0
+        ? '<p class="text-muted">Brak uruchomionych maszyn.</p>'
+        : '<ul class="list-group mb-3">' +
+          window.vmInstances.map(vm => `<li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><strong>${vm.name}</strong> (${vm.zone})</span>
+            <span class="badge bg-${vm.status === 'RUNNING' ? 'success' : 'secondary'}">${vm.status}</span>
+          </li>`).join('') +
+          '</ul>');
+    gcpContainer.appendChild(vmBlock);
+  }
+
+  if (window.gcsBuckets && Array.isArray(window.gcsBuckets)) {
+    const bucketBlock = document.createElement('div');
+    bucketBlock.innerHTML = '<h4>Bucket\'y Storage</h4>' +
+      (window.gcsBuckets.length === 0
+        ? '<p class="text-muted">Brak bucketów w projekcie.</p>'
+        : '<ul class="list-group">' +
+          window.gcsBuckets.map(name => `<li class="list-group-item">${name}</li>`).join('') +
+          '</ul>');
+    gcpContainer.appendChild(bucketBlock);
+  }
+});

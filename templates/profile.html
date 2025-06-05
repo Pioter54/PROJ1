@@ -12,6 +12,13 @@
       rel="stylesheet" />
     <link rel="stylesheet" href="/static/css/styles.css" />
     <script src="/static/js/script.js" defer></script>
+    {% if vm_instances is defined and gcs_buckets is defined %}
+    <script>
+      window.vmInstances = {{ vm_instances | tojson | safe }};
+      window.gcsBuckets  = {{ gcs_buckets  | tojson | safe }};
+    </script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>
     <script src="static/js/profile.js" defer></script>
   </head>
 

@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-from main import chat_with_terraform,stream_terraform  
+from main import chat_with_terraform,stream_terraform,fetch_gcp_resources
 from flask import flash,Response 
 
 app = Flask(__name__)
@@ -151,7 +151,20 @@ def profile():
         session['zone']         = new_zone
         session['machine_type'] = new_machine_type
         return redirect(url_for('profile', success='Dane zostały zaktualizowane'))
-    return render_template('profile.html', user=user, project=project)
+    vm_instances, gcs_buckets = fetch_gcp_resources(
+        project.name if project else None,
+        project.google_cloud_keyfile_json if project else None
+    )
+    print(">>> vm_instances =", vm_instances)
+    print(">>> gcs_buckets =", gcs_buckets)
+
+    return render_template(
+        'profile.html',
+        user=user,
+        project=project,
+        vm_instances=vm_instances,
+        gcs_buckets=gcs_buckets
+    )
 
 @app.route("/create_project", methods=["POST"])
 @login_required
