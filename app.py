@@ -26,6 +26,7 @@ class Project(db.Model):
     active = db.Column(db.Boolean, default=False)
     machine_type = db.Column(db.String(250), default="")
     google_cloud_keyfile_json = db.Column(db.String(1000), default="")
+    llm_api_key = db.Column(db.String(250), default="")
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('projects', lazy=True))
@@ -94,8 +95,15 @@ def chat_endpoint():
     location     = session.get('location', '')
     zone         = session.get('zone', '')
     machine_type = session.get('machine_type', '')
+    llm_api_key  = session.get('llm_api_key', '')
+    
+    if not llm_api_key:
+        return jsonify({
+            "error": "Nie skonfigurowano klucza API dla LLM. Aby móc korzystać z czatu, należy dodać własny klucz API w ustawieniach projektu."
+        })
+    
     prompt = f"{user_input} moje szczegóły: project:{project_name}, location:{location}, zone:{zone,}, machine_type:{machine_type}"
-    result = chat_with_terraform(prompt)
+    result = chat_with_terraform(prompt, llm_api_key)
     return jsonify(result)
 
 @app.route('/generate_tf', methods=['POST'])
@@ -184,6 +192,7 @@ def create_project():
     zone = request.form.get("zone")
     machine_type = request.form.get("machine_type")
     google_cloud_keyfile_json = request.form.get("google_cloud_keyfile_json", "")
+    llm_api_key = request.form.get("llm_api_key", "")
     if name and location:
         new_project = Project(
             name=name,
@@ -191,7 +200,8 @@ def create_project():
             zone=zone,
             machine_type=machine_type,
             user_id=session['user_id'],
-            google_cloud_keyfile_json=google_cloud_keyfile_json
+            google_cloud_keyfile_json=google_cloud_keyfile_json,
+            llm_api_key=llm_api_key
         )
         db.session.add(new_project)
         db.session.commit()
@@ -236,6 +246,7 @@ def edit_project(project_id):
         project.zone          = request.form['zone']
         project.machine_type  = request.form['machine_type']
         project.google_cloud_keyfile_json   = request.form.get('google_cloud_keyfile_json', '')
+        project.llm_api_key   = request.form.get('llm_api_key', '')
         db.session.commit()
 
         if project.active:
@@ -244,7 +255,7 @@ def edit_project(project_id):
             session['zone']         = project.zone
             session['machine_type'] = project.machine_type
             session['google_cloud_keyfile_json'] = project.google_cloud_keyfile_json
-
+            session['llm_api_key'] = project.llm_api_key
 
         return redirect(url_for('profile'))
 

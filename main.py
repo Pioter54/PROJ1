@@ -208,7 +208,77 @@ def stop_machine(params: dict) -> None:
     return f"VM {name} has been stopped"
 
 # --- Main chat function ---
-def chat_with_terraform(prompt: str) -> dict:
+def chat_with_terraform(prompt: str, llm_api_key: str = None) -> dict:
+    if not llm_api_key:
+        return {"error": "Nie skonfigurowano klucza API dla LLM. Aby móc korzystać z czatu, należy dodać własny klucz API w ustawieniach projektu."}
+    
+    client = ChatOpenAI(
+        api_key=llm_api_key,
+        model="gpt-3.5-turbo-1106",
+        temperature=0.2,
+        model_kwargs={
+            "functions": [
+                {
+                    "name": "create_machine",
+                    "description": "Generuje Terraform dla VM na podstawie szablonu create_machine.tf",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "project":      {"type": "string"},
+                            "region":       {"type": "string"},
+                            "zone":         {"type": "string"},
+                            "name":         {"type": "string"},
+                            "machine_type": {"type": "string"},
+                            "image":        {"type": "string"},
+                            "network":      {"type": "string"}
+                        },
+                        "required": []
+                    }
+                },
+                {
+                    "name": "delete_machine",
+                    "description": "Generuje Terraform dla usunięcia VM",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "project": {"type": "string"},
+                            "zone":    {"type": "string"},
+                            "name":    {"type": "string"}
+                        },
+                        "required": ["name"]
+                    }
+                },
+                {
+                    "name": "stop_machine",
+                    "description": "Zatrzymuje VM w GCP",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "project": {"type": "string"},
+                            "zone":    {"type": "string"},
+                            "name":    {"type": "string"}
+                        },
+                        "required": ["name"]
+                    }
+                },
+                {
+                    "name": "create_bucket",
+                    "description": "Generuje Terraform dla GCP bucket na podstawie szablonu create_bucket.tf",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "name":          {"type": "string"},
+                            "location":      {"type": "string"},
+                            "storage_class": {"type": "string"}
+                        },
+                        "required": []
+                    }
+                }
+            ],
+            "function_call": "auto"
+        }
+    )
+
     messages = [
         {"role": "system", "content": (
             "Jesteś asystentem, który rozumie, kiedy należy wygenerować dane wejściowe do szablonu Terraform "
