@@ -108,6 +108,16 @@ def generate_tf():
     if type_ == "create_machine":
         from main import create_machine
         tf_output = create_machine(params)
+    elif type_ == "delete_machine":
+        from main import delete_machine
+        tf_output = delete_machine(params)
+    elif type_ == "stop_machine":
+        from main import stop_machine
+        try:
+            result = stop_machine(params)
+            return jsonify({'result': result})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
     elif type_ == "create_bucket":
         from main import create_bucket
         tf_output = create_bucket(params)

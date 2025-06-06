@@ -33,6 +33,32 @@ client = ChatOpenAI(
                 }
             },
             {
+                "name": "delete_machine",
+                "description": "Generuje Terraform dla usunięcia VM",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "project": {"type": "string"},
+                        "zone":    {"type": "string"},
+                        "name":    {"type": "string"}
+                    },
+                    "required": ["name"]
+                }
+            },
+            {
+                "name": "stop_machine",
+                "description": "Zatrzymuje VM w GCP",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "project": {"type": "string"},
+                        "zone":    {"type": "string"},
+                        "name":    {"type": "string"}
+                    },
+                    "required": ["name"]
+                }
+            },
+            {
                 "name": "create_bucket",
                 "description": "Generuje Terraform dla GCP bucket na podstawie szablonu create_bucket.tf",
                 "parameters": {
@@ -131,7 +157,55 @@ def create_bucket(params: dict) -> str:
     out_path.write_text(tf)
     return tf
 
+def delete_machine(params: dict) -> str:
+    src = template_dir / "delete_machine.tf"
+    tf = src.read_text()
 
+    def extract_value(pattern):
+        match = re.search(pattern, tf)
+        return match.group(1) if match else ""
+
+    current_values = {
+        "project": extract_value(r'project\s*=\s*"([^"]+)"'),
+        "zone": extract_value(r'zone\s*=\s*"([^"]+)"'),
+        "name": extract_value(r'name\s*=\s*"([^"]+)"')
+    }
+
+    new_values = {
+        "project": params.get("project", current_values["project"]),
+        "zone": params.get("zone", current_values["zone"]),
+        "name": params["name"]
+    }
+
+    replacements = {
+        r'project\s*=\s*"[^"]+"': f'project = "{new_values["project"]}"',
+        r'zone\s*=\s*"[^"]+"':    f'zone    = "{new_values["zone"]}"',
+        r'name\s*=\s*"[^"]+"':    f'name    = "{new_values["name"]}"'
+    }
+
+    for pat, repl in replacements.items():
+        tf = re.sub(pat, repl, tf)
+
+    out_path = output_dir / "output_delete_machine.tf"
+    out_path.write_text(tf)
+    return tf
+
+def stop_machine(params: dict) -> None:
+    project = params.get("project")
+    zone = params.get("zone")
+    name = params.get("name")
+
+    if not all([project, zone, name]):
+        raise ValueError("Missing required parameters: project, zone, and name are required")
+
+    instance_client = compute_v1.InstancesClient()
+    operation = instance_client.stop(
+        project=project,
+        zone=zone,
+        instance=name
+    )
+    operation.result()  # Wait for operation to complete
+    return f"VM {name} has been stopped"
 
 # --- Main chat function ---
 def chat_with_terraform(prompt: str) -> dict:
